@@ -9,8 +9,8 @@ export const UserSidebar = ({
   selectedClinic,
   setSelectedClinic,
 }) => {
-  const patientData = JSON.parse(sessionStorage.getItem("patientData") || "{}");
-  const userData = JSON.parse(sessionStorage.getItem("userData") || "{}");
+  const patientData = useMemo(() => JSON.parse(sessionStorage.getItem("patientData") || "{}"), []);
+  const userData = useMemo(() => JSON.parse(sessionStorage.getItem("userData") || "{}"), []);
   const id = userData?.id;
 
   const [appointmentClinics, setAppointmentClinics] = useState([]);

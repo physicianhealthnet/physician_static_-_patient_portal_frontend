@@ -100,7 +100,7 @@ export const UserDashboard = () => {
 
             {activeTab === "video-consult" && <VideoConsult />}
 
-            {activeTab === "clinic-engaged" && !selectedClinic && (
+            {activeTab === "attend-clinics" && !selectedClinic && (
               <div className="flex flex-col items-center justify-center mt-[100px] text-slate-400">
                 <Icon icon="solar:hospital-bold-duotone" width={64} className="text-slate-200 mb-4" />
                 <h3 className="text-xl font-bold text-slate-600">Select a Clinic</h3>
@@ -118,7 +118,7 @@ export const UserDashboard = () => {
               activeTab !== "bills" &&
               activeTab !== "chat" &&
               activeTab !== "video-consult" &&
-              activeTab !== "clinic-engaged" && (
+              activeTab !== "attend-clinics" && (
                 <div className="flex flex-col items-center justify-center mt-[100px]">
                   <p className="text-[#666] text-[15px]">
                     You have no new updates in{" "}
