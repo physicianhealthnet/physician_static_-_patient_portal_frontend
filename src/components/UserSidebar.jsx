@@ -34,11 +34,20 @@ export const UserSidebar = ({
   }, [patientData]);
 
   const clinics = useMemo(() => {
-    return doctorsData.filter(
+    const rawClinics = doctorsData.filter(
       (d) =>
         patientClinicId.includes(d.cid) ||
         appointmentClinics.includes(d.clinic_name)
     );
+    
+    const uniqueClinicsMap = new Map();
+    rawClinics.forEach(c => {
+      if (!uniqueClinicsMap.has(c.cid)) {
+        uniqueClinicsMap.set(c.cid, c);
+      }
+    });
+    
+    return Array.from(uniqueClinicsMap.values());
   }, [patientClinicId, appointmentClinics]);
 
   useEffect(() => {
