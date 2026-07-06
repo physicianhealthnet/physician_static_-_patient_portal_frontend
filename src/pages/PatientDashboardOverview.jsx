@@ -67,15 +67,19 @@ const PatientDashboardOverview = () => {
   useEffect(() => {
     if (!patientClinicId.length) return;
     const clinics = doctorsData.filter((d) => patientClinicId.includes(d.cid));
-    const resolved = clinics.map((clinic) => ({
-      cid: clinic.cid,
-      clinic_name: clinic.clinic_name,
-      subdomain:
-        clinic.subdomain_name ||
-        clinic.clinic_name.toLowerCase().replace(/\s+/g, "-"),
-      address: clinic.address || "",
-      phone: clinic.phone || "",
-    }));
+    const resolvedMap = new Map();
+    clinics.forEach((clinic) => {
+      if (!resolvedMap.has(clinic.cid)) {
+        resolvedMap.set(clinic.cid, {
+          cid: clinic.cid,
+          clinic_name: clinic.clinic_name,
+          subdomain: clinic.subdomain_name || clinic.clinic_name.toLowerCase().replace(/\s+/g, "-"),
+          address: clinic.address || "",
+          phone: clinic.phone || "",
+        });
+      }
+    });
+    const resolved = Array.from(resolvedMap.values());
     setClinicIdResolvedData((prev) => {
       if (JSON.stringify(prev) === JSON.stringify(resolved)) return prev;
       return resolved;

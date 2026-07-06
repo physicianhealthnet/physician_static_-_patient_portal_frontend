@@ -1,16 +1,16 @@
 import axios from "axios";
 
 const AxiosInstanceSecondryServer = axios.create({
-  // baseURL: "https://phnappointment.physicianhealthnet.com/api/"
-  baseURL: "http://localhost:3027/"
+  baseURL: "https://phnappointment.physicianhealthnet.com/api/"
+  // baseURL: "http://localhost:3027/"
 });
 
 const isLocal = window?.location?.hostname === "localhost" || window?.location?.hostname === "127.0.0.1";
 
 const AxiosInstanceDependency = axios.create({
   baseURL: isLocal
-    ? "http://localhost:3028/"
-    // ? "https://dependencyforphn.physicianhealthnet.com/api/"
+    // ? "http://localhost:3028/"
+    ? "https://dependencyforphn.physicianhealthnet.com/api/"
     : "https://dependencyforphn.physicianhealthnet.com/api/"
 })
 
