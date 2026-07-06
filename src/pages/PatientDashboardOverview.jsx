@@ -357,14 +357,30 @@ const PatientDashboardOverview = () => {
     ],
   });
 
-  const activeMeds = prescriptions
-    .filter((p) => {
-      if (p._type !== "prescription") return false;
+  const activeMeds = (() => {
+    const rxList = prescriptions
+      .filter((p) => p._type === "prescription")
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt || b.updatedAt || new Date()) -
+          new Date(a.createdAt || a.updatedAt || new Date())
+      );
+
+    const latestActive = rxList.find((p) => {
       const rxDate = new Date(p.createdAt || p.updatedAt || new Date());
       const isOld = new Date() - rxDate > 30 * 24 * 60 * 60 * 1000;
       return !isOld && !p.isRefillable;
-    })
-    .flatMap((p) => p.medicinesData || []);
+    });
+
+    const latestRefill = rxList.find((p) => p.isRefillable);
+
+    const meds = [];
+    if (latestActive?.medicinesData) meds.push(...latestActive.medicinesData);
+    if (latestRefill?.medicinesData && latestRefill !== latestActive) {
+      meds.push(...latestRefill.medicinesData);
+    }
+    return meds;
+  })();
   const testResults = prescriptions
     .filter((p) => p._type === "lab" || p._type === "scan")
     .slice(0, 3);
@@ -527,20 +543,35 @@ const PatientDashboardOverview = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
-                <th className="p-4 font-bold w-1/3 border-b border-slate-200">
-                  Clinic Name
+                <th className="p-4 font-bold border-b border-slate-200 whitespace-nowrap">
+                  <div className="flex items-center gap-2">
+                    <Icon icon="solar:hospital-bold-duotone" width="16" />
+                    Clinic Name
+                  </div>
                 </th>
-                <th className="p-4 font-bold w-1/3 border-b border-slate-200">
-                  location
+                <th className="p-4 font-bold border-b border-slate-200 whitespace-nowrap">
+                  <div className="flex items-center gap-2">
+                    <Icon icon="solar:map-point-bold-duotone" width="16" />
+                    Location
+                  </div>
                 </th>
-                <th className="p-4 font-bold w-1/3 border-b border-slate-200 text-center">
-                  primary contact no
+                <th className="p-4 font-bold border-b border-slate-200 text-center whitespace-nowrap">
+                  <div className="flex items-center justify-center gap-2">
+                    <Icon icon="solar:phone-bold-duotone" width="16" />
+                    Primary Contact No
+                  </div>
                 </th>
-                <th className="p-4 font-bold w-1/3 border-b border-slate-200 text-center">
-                  primary whatsapp no
+                <th className="p-4 font-bold border-b border-slate-200 text-center whitespace-nowrap">
+                  <div className="flex items-center justify-center gap-2">
+                    <Icon icon="ic:baseline-whatsapp" width="16" className="text-green-500" />
+                    Primary Whatsapp No
+                  </div>
                 </th>
-                <th className="p-4 font-bold w-1/3 border-b border-slate-200 text-center">
-                  Web Chat
+                <th className="p-4 font-bold border-b border-slate-200 text-center whitespace-nowrap">
+                  <div className="flex items-center justify-center gap-2">
+                    <Icon icon="solar:chat-round-dots-bold-duotone" width="16" />
+                    Web Chat
+                  </div>
                 </th>
               </tr>
             </thead>
@@ -558,23 +589,46 @@ const PatientDashboardOverview = () => {
                       {clinic.address || "Location"}
                     </td>
                     <td className="p-4 border-b border-slate-100 align-top text-center">
-                      <span className="text-slate-500 font-medium">
-                        {clinic.phone ? `+91 ${clinic.phone}` : "N/A"}
-                      </span>
+                      {clinic.phone ? (
+                        <a 
+                          href={`tel:+91${clinic.phone}`} 
+                          onClick={(e) => e.stopPropagation()}
+                          className="inline-flex items-center justify-center gap-2 text-blue-500 hover:text-blue-600 font-medium transition-colors bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-full"
+                        >
+                          <Icon icon="solar:phone-bold-duotone" width="16" />
+                          +91 {clinic.phone}
+                        </a>
+                      ) : (
+                        <span className="text-slate-400 font-medium">N/A</span>
+                      )}
                     </td>
                     <td className="p-4 border-b border-slate-100 align-top text-center">
-                      <span className="text-slate-500 font-medium">
-                        {clinic.phone ? `+91 ${clinic.phone}` : "N/A"}
-                      </span>
+                      {clinic.phone ? (
+                        <a 
+                          href={`https://wa.me/91${clinic.phone}`} 
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="inline-flex items-center justify-center gap-2 text-green-600 hover:text-green-700 font-medium transition-colors bg-green-50 hover:bg-green-100 px-3 py-1.5 rounded-full"
+                        >
+                          <Icon icon="ic:baseline-whatsapp" width="16" />
+                          +91 {clinic.phone}
+                        </a>
+                      ) : (
+                        <span className="text-slate-400 font-medium">N/A</span>
+                      )}
                     </td>
-                    <td className="p-4 border-b border-slate-100 align-middle text-center text-slate-400 hover:text-blue-500 transition-colors">
-                      <div className={`transform transition-transform duration-300 ${expandedClinicId === clinic.cid ? 'rotate-180 text-blue-500' : ''}`}>
-                        <Icon 
-                          icon="solar:alt-arrow-down-bold" 
-                          width="20" 
-                          className="mx-auto" 
-                        />
-                      </div>
+                    <td className="p-4 border-b border-slate-100 align-middle text-center">
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate('/dashboard/chat', { state: { clinicName: clinic.clinic_name, openChat: true } });
+                        }}
+                        className="inline-flex items-center justify-center gap-2 font-medium transition-colors px-4 py-2 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200"
+                      >
+                        <Icon icon="solar:chat-round-dots-bold-duotone" width="18" />
+                        Chat
+                      </button>
                     </td>
                   </tr>
 

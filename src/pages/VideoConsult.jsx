@@ -4,7 +4,7 @@ import { JitsiMeeting } from '@jitsi/react-sdk';
 import { Icon } from "@iconify/react";
 import { AxiosInstanceDependency, AxiosInstanceSecondryServer } from "../utilities/AxiosInstance";
 import doctorsData from "../data/doctorsData.json";
-
+import clinicFallbackImg from "../assets/clinic.png";
 const VideoConsult = () => {
   const [meetingJoined, setMeetingJoined] = useState(false);
   const [roomName, setRoomName] = useState(() => {
@@ -26,6 +26,8 @@ const VideoConsult = () => {
   const [selectedTime, setSelectedTime] = useState("");
   const [patientConcerns, setPatientConcerns] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+  const [selectedSpecialty, setSelectedSpecialty] = useState("");
   
   const [requestSubmitting, setRequestSubmitting] = useState(false);
   const [requestError, setRequestError] = useState("");
@@ -88,7 +90,7 @@ const VideoConsult = () => {
           if (!seen.has(docKey)) {
             seen.add(docKey);
             allDoctors.push({
-              _id: doc.cid, // using cid as id
+              _id: `${doc.cid}-${cleanDocName}`, // using unique combination
               cid: doc.cid,
               subdomainName: doc.subdomain_name || doc.subdomainName || doc.clinic_name.toLowerCase().replace(/\s+/g, "-"),
               doctorName: cleanDocName,
@@ -211,10 +213,14 @@ const VideoConsult = () => {
     }
   };
 
-  const filteredDoctors = doctors.filter(doc => 
-    doc.doctorName?.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    doc.department?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredDoctors = doctors.filter(doc => {
+    const matchesSearch = doc.doctorName?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          doc.department?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSpecialty = selectedSpecialty ? doc.department === selectedSpecialty : true;
+    return matchesSearch && matchesSpecialty;
+  });
+
+  const specialties = [...new Set(doctors.map(d => d.department))].filter(Boolean);
 
   return (
     <div className="w-full h-full bg-[#f8f9fc] flex items-center justify-center p-2 sm:p-6">
@@ -388,10 +394,38 @@ const VideoConsult = () => {
                         className="pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-full text-xs font-semibold focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 w-48 transition-all"
                       />
                     </div>
-                    <button className="flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-200 rounded-full text-xs font-bold text-slate-600 hover:bg-slate-50 cursor-pointer">
-                      Filter
-                      <Icon icon="solar:tuning-square-2-linear" />
-                    </button>
+                    <div className="relative">
+                      <button 
+                        onClick={() => setShowFilters(!showFilters)}
+                        className={`flex items-center gap-1.5 px-3 py-2 border rounded-full text-xs font-bold cursor-pointer transition-all ${showFilters || selectedSpecialty ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+                      >
+                        Filter {selectedSpecialty && <span className="w-2 h-2 rounded-full bg-indigo-500"></span>}
+                        <Icon icon="solar:tuning-square-2-linear" />
+                      </button>
+                      
+                      {showFilters && (
+                        <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-100 p-2 z-10 animate-in fade-in zoom-in-95 duration-200">
+                          <h4 className="text-[10px] font-black uppercase text-slate-400 mb-2 px-2 tracking-wider">Specialty</h4>
+                          <div className="max-h-48 overflow-y-auto custom-scrollbar flex flex-col gap-1">
+                            <button 
+                              onClick={() => { setSelectedSpecialty(""); setShowFilters(false); }}
+                              className={`text-left px-3 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer border-none ${!selectedSpecialty ? 'bg-indigo-50 text-indigo-700' : 'bg-transparent text-slate-600 hover:bg-slate-50'}`}
+                            >
+                              All Specialties
+                            </button>
+                            {specialties.map(spec => (
+                              <button 
+                                key={spec}
+                                onClick={() => { setSelectedSpecialty(spec); setShowFilters(false); }}
+                                className={`text-left px-3 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer border-none ${selectedSpecialty === spec ? 'bg-indigo-50 text-indigo-700' : 'bg-transparent text-slate-600 hover:bg-slate-50'}`}
+                              >
+                                {spec}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
                 
@@ -416,9 +450,10 @@ const VideoConsult = () => {
                             <div className="flex gap-3 mb-4">
                               <div className="w-16 h-16 rounded-xl bg-slate-100 overflow-hidden shrink-0 border border-slate-200">
                                 <img 
-                                  src={doc.photo || "https://ui-avatars.com/api/?name=" + encodeURIComponent(doc.doctorName) + "&background=random"} 
+                                  src={doc.photo || clinicFallbackImg} 
                                   alt={doc.doctorName} 
                                   className="w-full h-full object-cover"
+                                  onError={(e) => { e.target.onerror = null; e.target.src = clinicFallbackImg; }}
                                 />
                               </div>
                               <div className="flex flex-col justify-center">
@@ -487,9 +522,10 @@ const VideoConsult = () => {
                   
                   <div className="w-full aspect-square rounded-2xl bg-slate-100 mb-4 overflow-hidden border border-slate-200 flex items-center justify-center">
                     <img 
-                      src={selectedDoctor.photo || "https://ui-avatars.com/api/?name=" + encodeURIComponent(selectedDoctor.doctorName) + "&background=random"} 
+                      src={selectedDoctor.photo || clinicFallbackImg} 
                       alt={selectedDoctor.doctorName} 
                       className="w-full h-full object-cover"
+                      onError={(e) => { e.target.onerror = null; e.target.src = clinicFallbackImg; }}
                     />
                   </div>
                   

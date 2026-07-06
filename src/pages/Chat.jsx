@@ -1,6 +1,6 @@
 import { Icon } from "@iconify/react";
 import { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import UserProfileView from "./UserProfileView";
 import UserProfileForm from "./UserProfileForm";
 import RescheduleModal from "../components/RescheduleModal";
@@ -17,6 +17,7 @@ dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
 
 function Chat() {
+  const location = useLocation();
   const userData = JSON.parse(sessionStorage.getItem("userData"));
   const id = userData?.id;
   console.log(id);
@@ -30,7 +31,7 @@ function Chat() {
   const [appointmentData, setAppointmentData] = useState([]);
   console.log(appointmentData);
 
-  const [selectedClinic, setSelectedClinic] = useState("all");
+  const [selectedClinic, setSelectedClinic] = useState(location.state?.clinicName || "all");
   const [userProfileViewMode, setUserProfileViewMode] = useState(false);
   const [userProfileEditMode, setUserProfileEditMode] = useState(false);
   const [dateFilter, setDateFilter] = useState("this_week"); // 'all', 'today', 'tomorrow', 'this_week', 'this_month', 'next_month'
@@ -58,7 +59,7 @@ function Chat() {
   ];
   const [showReschedule, setShowReschedule] = useState(false);
   const [selectedApt, setSelectedApt] = useState(null);
-  const [showChat, setShowChat] = useState(false);
+  const [showChat, setShowChat] = useState(location.state?.openChat || false);
 
   const handleApprove = async (apt) => {
     try {

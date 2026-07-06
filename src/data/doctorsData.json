@@ -37,6 +37,46 @@
     "clinic_image": "https://tse1.mm.bing.net/th/id/OIP.7j0RGabJJglbnB_VL6caHwAAAA?w=176&h=180&c=7&r=0&o=7&pid=1.7&rm=3"
   },
   {
+    "cid": "PHN-C-0001",
+    "subdomain_name":"demo",
+    "clinic_name": "PHN Clinic",
+    "doctor_name": "Dr. Navadeepak",
+    "specialization": "General Medicine",
+    "phone": "9876543210",
+    "address": "Erode",
+    "clinic_image": "https://tse1.mm.bing.net/th/id/OIP.7j0RGabJJglbnB_VL6caHwAAAA?w=176&h=180&c=7&r=0&o=7&pid=1.7&rm=3"
+  },
+  {
+    "cid": "PHN-C-0001",
+    "subdomain_name":"demo",
+    "clinic_name": "PHN Clinic",
+    "doctor_name": "Dr. Deepak",
+    "specialization": "General Medicine",
+    "phone": "9876543210",
+    "address": "Erode",
+    "clinic_image": "https://tse1.mm.bing.net/th/id/OIP.7j0RGabJJglbnB_VL6caHwAAAA?w=176&h=180&c=7&r=0&o=7&pid=1.7&rm=3"
+  },
+  {
+    "cid": "PHN-C-0001",
+    "subdomain_name":"demo",
+    "clinic_name": "PHN Clinic",
+    "doctor_name": "Dr. Alexander Pierce",
+    "specialization": "General Medicine",
+    "phone": "9876543210",
+    "address": "Erode",
+    "clinic_image": "https://tse1.mm.bing.net/th/id/OIP.7j0RGabJJglbnB_VL6caHwAAAA?w=176&h=180&c=7&r=0&o=7&pid=1.7&rm=3"
+  },
+  {
+    "cid": "PHN-C-0001",
+    "subdomain_name":"demo",
+    "clinic_name": "PHN Clinic",
+    "doctor_name": "John",
+    "specialization": "General Medicine",
+    "phone": "7603857110",
+    "address": "Erode",
+    "clinic_image": "https://tse1.mm.bing.net/th/id/OIP.7j0RGabJJglbnB_VL6caHwAAAA?w=176&h=180&c=7&r=0&o=7&pid=1.7&rm=3"
+  },
+  {
     "cid": "PHN-C-0002",
     "subdomain_name":"demo2",
     "clinic_name": "PHN Clinic 2",
