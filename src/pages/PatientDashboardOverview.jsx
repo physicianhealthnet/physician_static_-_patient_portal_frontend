@@ -263,7 +263,7 @@ const PatientDashboardOverview = () => {
 
   const recentGlucoseVitals = vitalsHistory
     .filter((v) => v.bloodSugarFasting || v.bloodSugarAfterFood)
-    .slice(-5);
+    .slice(-7);
   const latestVitals =
     vitalsHistory.length > 0 ? vitalsHistory[vitalsHistory.length - 1] : null;
   const glucoseData = {
@@ -296,8 +296,6 @@ const PatientDashboardOverview = () => {
     scales: {
       y: {
         beginAtZero: true,
-        max: 8,
-        ticks: { stepSize: 2 },
         border: { display: false },
       },
       x: { grid: { display: false }, border: { display: false } },

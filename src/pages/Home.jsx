@@ -34,6 +34,7 @@ import pilesV2 from "../assets/piles_v2.png";
 import diabetesV2 from "../assets/diabetes_v2.png";
 import heartV2 from "../assets/heart_v2.png";
 import depressionV2 from "../assets/depression_v2.png";
+import clinicFallbackImg from "../assets/clinic.png";
 import { scroll } from "../functions/Scroll.js";
 import doctorsDataJson from "../data/doctorsData.json";
 
@@ -461,18 +462,15 @@ function Home() {
                       style={{ animationDelay: `${index * 100}ms`, opacity: 0 }}
                     >
                       <div className="w-full h-40 flex items-center justify-center bg-sky-50 overflow-hidden">
-                        {data?.clinic_image ? (
-                          <img
-                            src={data.clinic_image}
-                            alt={data.clinic_name || "Hospital"}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                          />
-                        ) : (
-                          <Icon
-                            icon="lucide:hospital"
-                            className="w-16 h-16 text-sky-300"
-                          />
-                        )}
+                        <img
+                          src={data?.clinic_image || clinicFallbackImg}
+                          alt={data.clinic_name || "Hospital"}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = clinicFallbackImg;
+                          }}
+                        />
                       </div>
                       <div className="p-4 flex flex-col gap-1">
                         <h2 className="text-lg font-semibold truncate text-[#252527] group-hover:text-[#14bef0] transition-colors">
