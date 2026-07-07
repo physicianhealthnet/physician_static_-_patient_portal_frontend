@@ -33,6 +33,10 @@ const VideoConsult = () => {
   const [requestError, setRequestError] = useState("");
   const [requestSuccess, setRequestSuccess] = useState(false);
 
+  // Accordion states
+  const [upcomingOpen, setUpcomingOpen] = useState(true);
+  const [historyOpen, setHistoryOpen] = useState(false);
+
   // Retrieve patient details from session storage
   const userStr = sessionStorage.getItem("userData");
   const user = userStr ? JSON.parse(userStr) : null;
@@ -618,79 +622,133 @@ const VideoConsult = () => {
                     <span className="text-sm font-semibold">Loading your meetings...</span>
                   </div>
                 ) : scheduledMeetings.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {scheduledMeetings.map((meet) => {
-                      const isScheduled = meet.status === "Scheduled";
-                      const isCompleted = meet.status === "Completed";
-                      const isCancelled = meet.status === "Cancelled";
-                      const isRequested = meet.status === "Requested";
+                  <div className="flex flex-col gap-6">
+                    {(() => {
+                      const upcoming = scheduledMeetings.filter(m => m.status === 'Scheduled' || m.status === 'Requested');
+                      const history = scheduledMeetings.filter(m => m.status === 'Completed' || m.status === 'Cancelled' || (!['Scheduled', 'Requested'].includes(m.status)));
+                      
+                      const renderTable = (title, meetings, isUpcoming, isOpen, toggleOpen, { isFirst = false, isLast = false } = {}) => {
+                        if (meetings.length === 0) return null;
+                        
+                        const colorClass = isUpcoming ? "text-indigo-500" : "text-slate-500";
+                        const bgClass = isUpcoming ? "bg-indigo-50" : "bg-slate-50";
+                        const iconStr = isUpcoming ? "solar:calendar-date-bold-duotone" : "solar:history-bold-duotone";
 
-                      return (
-                        <div 
-                          key={meet._id}
-                          className={`p-5 rounded-2xl border transition-all flex flex-col justify-between shadow-sm ${
-                            isCancelled ? "bg-slate-50 border-slate-200 opacity-70" : 
-                            isCompleted ? "bg-emerald-50/30 border-emerald-100" : 
-                            isRequested ? "bg-amber-50/30 border-amber-100" : 
-                            "bg-white border-slate-200 hover:shadow-md"
-                          }`}
-                        >
-                          <div className="flex justify-between items-start mb-4">
-                            <div>
-                              <h4 className="text-base font-bold text-slate-800 mb-1 flex items-center gap-1.5">
-                                <Icon icon="solar:stethoscope-bold" className="text-indigo-500" />
-                                Dr. {meet.doctorName}
-                              </h4>
-                              <p className="text-xs text-slate-500 font-medium m-0">
-                                {isRequested ? "Requested Consultation" : "Scheduled Video Call"}
-                              </p>
-                            </div>
-                            <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
-                              isCancelled ? "bg-red-50 text-red-600 border border-red-100" : 
-                              isCompleted ? "bg-emerald-50 text-emerald-600 border border-emerald-100" : 
-                              isRequested ? "bg-amber-50 text-amber-600 border border-amber-100" : 
-                              "bg-indigo-50 text-indigo-600 border border-indigo-100"
-                            }`}>
-                              {meet.status}
-                            </span>
-                          </div>
-
-                          <div className="flex items-center justify-between text-xs font-bold text-slate-600 bg-slate-50 p-3 rounded-xl mb-4 border border-slate-100">
-                            <span className="flex items-center gap-1.5">
-                              <Icon icon="solar:calendar-bold" className="text-slate-400 text-sm" />
-                              {meet.date}
-                            </span>
-                            <span className="flex items-center gap-1.5">
-                              <Icon icon="solar:clock-circle-bold" className="text-slate-400 text-sm" />
-                              {meet.time}
-                            </span>
-                          </div>
-
-                          <div className="flex items-center justify-between mt-auto">
-                            <span className="text-[11px] text-slate-400 font-medium italic truncate max-w-[50%]">
-                              {meet.notes ? `"${meet.notes}"` : "No description"}
-                            </span>
-
-                            {isScheduled ? (
-                              <button
-                                onClick={() => handleJoinMeet(meet.roomName)}
-                                className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-2.5 px-5 rounded-xl flex items-center gap-1.5 border-none shadow-md shadow-indigo-500/30 transition-all cursor-pointer hover:scale-105"
-                              >
-                                <Icon icon="solar:videocamera-bold" className="text-sm" />
-                                Join Call
-                              </button>
-                            ) : isRequested ? (
-                              <span className="text-[10px] text-amber-600 font-bold flex items-center gap-1">
-                                <Icon icon="solar:clock-circle-bold" className="text-amber-500" />
-                                Pending Approval
-                              </span>
-                            ) : (
-                              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Session ended</span>
+                        return (
+                          <div className={`border border-slate-200 bg-white overflow-hidden shadow-sm ${isFirst ? 'rounded-t-xl' : ''} ${isLast && !isOpen ? 'rounded-b-xl' : ''} ${!isFirst ? 'border-t-0' : ''}`}>
+                            <button
+                              onClick={toggleOpen}
+                              className="w-full flex items-center justify-between p-4 bg-white hover:bg-slate-50 transition-colors border-none cursor-pointer"
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className={`w-10 h-10 rounded flex items-center justify-center ${bgClass} ${colorClass}`}>
+                                  <Icon icon={iconStr} width={20} />
+                                </div>
+                                <div className="flex flex-col items-start">
+                                  <h2 className="text-sm font-black uppercase text-gray-700 tracking-wider m-0">
+                                    {title} <span className="text-slate-400 ml-2 text-xs font-bold">({meetings.length})</span>
+                                  </h2>
+                                </div>
+                              </div>
+                              <div className={`w-8 h-8 rounded-full flex items-center justify-center bg-gray-50 text-gray-400 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}>
+                                <Icon icon="solar:alt-arrow-down-linear" width={20} />
+                              </div>
+                            </button>
+                            
+                            {isOpen && (
+                              <div className={`border-t border-slate-100 bg-white ${isLast ? 'rounded-b-xl' : ''}`}>
+                                <div className="overflow-x-auto">
+                                  <table className="w-full text-left border-collapse">
+                                    <thead className="bg-slate-50/50 border-b border-slate-100">
+                                      <tr>
+                                        <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Doctor</th>
+                                        <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Date & Time</th>
+                                        <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap text-center">Status</th>
+                                        <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Notes</th>
+                                        <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap text-center">Action</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-50">
+                                      {meetings.map(meet => {
+                                        const isScheduled = meet.status === "Scheduled";
+                                        const isCompleted = meet.status === "Completed";
+                                        const isCancelled = meet.status === "Cancelled";
+                                        const isRequested = meet.status === "Requested";
+                                        
+                                        return (
+                                          <tr key={meet._id} className="hover:bg-slate-50/50 transition-colors">
+                                            <td className="px-6 py-4">
+                                              <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-500 flex items-center justify-center shrink-0">
+                                                  <Icon icon="solar:stethoscope-bold" width="20" />
+                                                </div>
+                                                <div className="flex flex-col">
+                                                  <span className="text-sm font-bold text-slate-800">Dr. {meet.doctorName}</span>
+                                                  <span className="text-[11px] font-bold text-indigo-500 mt-0.5">{meet.clinicName || meet.hospital || (doctorsData.find(d => d.doctor_name && d.doctor_name.includes(meet.doctorName))?.clinic_name || "PHN Clinic")}</span>
+                                                  <span className="text-[10px] font-medium text-slate-400 mt-0.5">{isUpcoming ? (isRequested ? "Requested" : "Scheduled Call") : "Past Call"}</span>
+                                                </div>
+                                              </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                              <div className="flex flex-col">
+                                                <span className="text-sm font-bold text-slate-700">{meet.date}</span>
+                                                <span className="text-[11px] font-medium text-slate-500">{meet.time}</span>
+                                              </div>
+                                            </td>
+                                            <td className="px-6 py-4 text-center">
+                                              <span className={`inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                                                isCancelled ? "bg-red-50 text-red-600 border border-red-100" : 
+                                                isCompleted ? "bg-emerald-50 text-emerald-600 border border-emerald-100" : 
+                                                isRequested ? "bg-amber-50 text-amber-600 border border-amber-100" : 
+                                                "bg-indigo-50 text-indigo-600 border border-indigo-100"
+                                              }`}>
+                                                {meet.status}
+                                              </span>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                              <span className="text-xs text-slate-500 font-medium italic truncate max-w-[200px] block" title={meet.notes}>
+                                                {meet.notes || "No description"}
+                                              </span>
+                                            </td>
+                                            <td className="px-6 py-4 text-center">
+                                              {isScheduled ? (
+                                                <button
+                                                  onClick={() => handleJoinMeet(meet.roomName)}
+                                                  className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-2 px-4 rounded-xl inline-flex items-center justify-center gap-1.5 border-none shadow-md shadow-indigo-500/30 transition-all cursor-pointer hover:scale-105"
+                                                >
+                                                  <Icon icon="solar:videocamera-bold" className="text-sm" />
+                                                  Join
+                                                </button>
+                                              ) : isRequested ? (
+                                                <span className="text-[10px] text-amber-600 font-bold inline-flex items-center justify-center gap-1 bg-amber-50 px-2 py-1.5 rounded-lg border border-amber-100">
+                                                  <Icon icon="solar:clock-circle-bold" className="text-amber-500" />
+                                                  Pending
+                                                </span>
+                                              ) : (
+                                                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider bg-slate-100 px-2 py-1.5 rounded-lg inline-block border border-slate-200">
+                                                  Session ended
+                                                </span>
+                                              )}
+                                            </td>
+                                          </tr>
+                                        );
+                                      })}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </div>
                             )}
                           </div>
+                        );
+                      };
+
+                      return (
+                        <div className="flex flex-col rounded-xl shadow-sm">
+                          {renderTable("Upcoming Consultations", upcoming, true, upcomingOpen, () => setUpcomingOpen(!upcomingOpen), { isFirst: true, isLast: history.length === 0 })}
+                          {renderTable("Past History", history, false, historyOpen, () => setHistoryOpen(!historyOpen), { isFirst: upcoming.length === 0, isLast: true })}
                         </div>
                       );
-                    })}
+                    })()}
                   </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center py-20 text-slate-400 bg-white rounded-3xl border border-slate-100 border-dashed">

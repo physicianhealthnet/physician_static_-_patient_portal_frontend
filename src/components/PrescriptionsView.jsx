@@ -137,7 +137,7 @@ const renderTable = (title, data, isRefillTable = false, isOpen, toggleOpen, { i
                       <td className="px-6 py-4">
                         <div className="flex flex-col max-w-[150px]">
                           <span className="text-sm font-bold text-slate-800 group-hover:text-[#14bef0] transition-colors truncate">
-                            {isRefillTable ? "Refill prescriptions" : "Active prescriptions"}
+                            {title === "Past prescriptions" ? "Past prescriptions" : isRefillTable ? "Refill prescriptions" : "Active prescriptions"}
                           </span>
                           <span className="text-[11px] font-medium text-slate-500 truncate mt-0.5">
                             {subtitle}

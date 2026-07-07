@@ -58,6 +58,8 @@ const PatientDashboardOverview = () => {
   const [selectedReportNotes, setSelectedReportNotes] = useState(null);
   const [vitalsHistory, setVitalsHistory] = useState([]);
   const [expandedClinicId, setExpandedClinicId] = useState(null);
+  const [expandedDataClinicId, setExpandedDataClinicId] = useState(null);
+  const [selectedRecordDetails, setSelectedRecordDetails] = useState(null);
 
   console.log(appointments, "appointments");
 
@@ -546,37 +548,12 @@ const PatientDashboardOverview = () => {
         <div className="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
-                <th className="p-4 font-bold border-b border-slate-200 whitespace-nowrap">
-                  <div className="flex items-center gap-2">
-                    <Icon icon="solar:hospital-bold-duotone" width="16" />
-                    Clinic Name
-                  </div>
-                </th>
-                <th className="p-4 font-bold border-b border-slate-200 whitespace-nowrap">
-                  <div className="flex items-center gap-2">
-                    <Icon icon="solar:map-point-bold-duotone" width="16" />
-                    Location
-                  </div>
-                </th>
-                <th className="p-4 font-bold border-b border-slate-200 text-center whitespace-nowrap">
-                  <div className="flex items-center justify-center gap-2">
-                    <Icon icon="solar:phone-bold-duotone" width="16" />
-                    Primary Contact No
-                  </div>
-                </th>
-                <th className="p-4 font-bold border-b border-slate-200 text-center whitespace-nowrap">
-                  <div className="flex items-center justify-center gap-2">
-                    <Icon icon="ic:baseline-whatsapp" width="16" className="text-green-500" />
-                    Primary Whatsapp No
-                  </div>
-                </th>
-                <th className="p-4 font-bold border-b border-slate-200 text-center whitespace-nowrap">
-                  <div className="flex items-center justify-center gap-2">
-                    <Icon icon="solar:chat-round-dots-bold-duotone" width="16" />
-                    Web Chat
-                  </div>
-                </th>
+              <tr className="bg-slate-50/50 text-[10px] uppercase font-black text-slate-500 tracking-widest border-b border-slate-100">
+                <th className="p-4">Clinic Name</th>
+                <th className="p-4">Location</th>
+                <th className="p-4 text-center">Primary Contact No</th>
+                <th className="p-4 text-center">Primary Whatsapp No</th>
+                <th className="p-4 text-center">Web Chat</th>
               </tr>
             </thead>
             <tbody className="text-sm text-slate-600">
@@ -649,10 +626,10 @@ const PatientDashboardOverview = () => {
                             <div className="absolute left-0 top-2 bottom-2 w-1 bg-gradient-to-b from-blue-400 to-indigo-400 rounded-r-md opacity-70 group-hover:opacity-100 transition-opacity"></div>
                             {service}
                           </td>
-                          <td colSpan={3} className="p-4 align-middle">
-                            <div className="flex justify-end gap-2">
+                          <td className="p-4 align-middle">
+                            <div className="flex justify-center">
                               <button 
-                                className="p-2.5 bg-white border border-slate-200 text-slate-600 rounded-full hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all shadow-sm hover:shadow-md transform hover:-translate-y-0.5" 
+                                className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-full hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all shadow-sm hover:shadow-md transform hover:-translate-y-0.5 font-medium text-sm w-max justify-center" 
                                 title="Phone"
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -660,9 +637,14 @@ const PatientDashboardOverview = () => {
                                 }}
                               >
                                 <Icon icon="solar:phone-bold" width="18" />
+                                {clinic.phone ? `+91 ${clinic.phone}` : "N/A"}
                               </button>
+                            </div>
+                          </td>
+                          <td className="p-4 align-middle">
+                            <div className="flex justify-center">
                               <button 
-                                className="p-2.5 bg-white border border-slate-200 text-slate-600 rounded-full hover:bg-green-50 hover:text-green-600 hover:border-green-200 transition-all shadow-sm hover:shadow-md transform hover:-translate-y-0.5" 
+                                className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-full hover:bg-green-50 hover:text-green-600 hover:border-green-200 transition-all shadow-sm hover:shadow-md transform hover:-translate-y-0.5 font-medium text-sm w-max justify-center" 
                                 title="WhatsApp"
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -670,26 +652,33 @@ const PatientDashboardOverview = () => {
                                 }}
                               >
                                 <Icon icon="ic:baseline-whatsapp" width="18" />
+                                {clinic.phone ? `+91 ${clinic.phone}` : "N/A"}
                               </button>
+                            </div>
+                          </td>
+                          <td className="p-4 align-middle">
+                            <div className="flex justify-center gap-2">
                               <button 
-                                className="p-2.5 bg-white border border-slate-200 text-slate-600 rounded-full hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-all shadow-sm hover:shadow-md transform hover:-translate-y-0.5" 
+                                className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-full hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-all shadow-sm hover:shadow-md transform hover:-translate-y-0.5 font-medium text-sm" 
                                 title="Web Chat"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  navigate('/dashboard/chat');
+                                  navigate('/dashboard/chat', { state: { clinicName: clinic.clinic_name, openChat: true } });
                                 }}
                               >
                                 <Icon icon="solar:chat-round-dots-bold" width="18" />
+                                Web Chat
                               </button>
                               <button 
-                                className="p-2.5 bg-white border border-slate-200 text-slate-600 rounded-full hover:bg-purple-50 hover:text-purple-600 hover:border-purple-200 transition-all shadow-sm hover:shadow-md transform hover:-translate-y-0.5" 
-                                title="Video Chat"
+                                className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-full hover:bg-purple-50 hover:text-purple-600 hover:border-purple-200 transition-all shadow-sm hover:shadow-md transform hover:-translate-y-0.5 font-medium text-sm" 
+                                title="Video Consult"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  navigate('/dashboard/video-consult');
+                                  navigate('/dashboard/video-consult', { state: { clinicName: clinic.clinic_name, openConsult: true } });
                                 }}
                               >
                                 <Icon icon="solar:videocamera-bold" width="18" />
+                                Video Consult
                               </button>
                             </div>
                           </td>
@@ -909,10 +898,334 @@ const PatientDashboardOverview = () => {
         </div>
       </div>
 
+      {/* Clinic Wise Data */}
+      <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6 flex flex-col gap-4 mt-2">
+        <div className="flex items-center gap-2 mb-2 border-b border-slate-50 pb-4">
+          <Icon icon="solar:buildings-bold-duotone" className="text-blue-500" width="24" />
+          <h3 className="text-slate-800 font-bold text-lg">
+            Clinic Wise Data
+          </h3>
+        </div>
+        <div className="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
+          <table className="w-full text-left border-collapse whitespace-nowrap">
+            <thead>
+              <tr className="bg-slate-50/50 text-[10px] uppercase font-black text-slate-500 tracking-widest border-b border-slate-100">
+                <th className="p-4 pl-6">Clinic Name</th>
+                <th className="p-4">Location</th>
+                <th className="p-4 text-center">Prescriptions</th>
+                <th className="p-4 text-center">Lab Reports</th>
+                <th className="p-4 text-center">Scan Reports</th>
+                <th className="p-4 text-center">Call</th>
+                <th className="p-4 text-center">WhatsApp</th>
+                <th className="p-4 text-center">Web Chat</th>
+                <th className="p-4 text-center">Book Video Appointment</th>
+                <th className="p-4 text-center">Book Appointment</th>
+              </tr>
+            </thead>
+            <tbody className="text-sm text-slate-600">
+              {clinicIdResolvedData.length > 0 ? (
+                clinicIdResolvedData.map((clinic, index) => {
+                  const clinicPrescriptions = prescriptions.filter(p => p._type === 'prescription' && p._clinicName === clinic.clinic_name);
+                  const clinicLabs = prescriptions.filter(p => p._type === 'lab' && p._clinicName === clinic.clinic_name);
+                  const clinicScans = prescriptions.filter(p => p._type === 'scan' && p._clinicName === clinic.clinic_name);
+                  
+                  return (
+                    <React.Fragment key={clinic.cid || index}>
+                      <tr 
+                        className={`cursor-pointer border-b border-slate-100 hover:bg-slate-50/80 transition-colors ${expandedDataClinicId === clinic.cid ? 'bg-slate-50/50' : ''}`}
+                        onClick={() => setExpandedDataClinicId(expandedDataClinicId === clinic.cid ? null : clinic.cid)}
+                      >
+                        <td className="p-4 pl-6 font-bold text-slate-800">
+                          <div className="flex items-center gap-2">
+                            <Icon 
+                              icon={expandedDataClinicId === clinic.cid ? "solar:alt-arrow-down-bold" : "solar:alt-arrow-right-bold"} 
+                              className="text-blue-500 transition-transform"
+                            />
+                            {clinic.clinic_name}
+                          </div>
+                        </td>
+                        <td className="p-4 font-medium">{clinic.address || "N/A"}</td>
+                        <td className="p-4">
+                          <div className="flex justify-center">
+                            <span className="w-10 h-8 flex items-center justify-center bg-blue-50 text-blue-600 font-black rounded-lg border border-blue-100">{clinicPrescriptions.length}</span>
+                          </div>
+                        </td>
+                        <td className="p-4">
+                          <div className="flex justify-center">
+                            <span className="w-10 h-8 flex items-center justify-center bg-rose-50 text-rose-600 font-black rounded-lg border border-rose-100">{clinicLabs.length}</span>
+                          </div>
+                        </td>
+                        <td className="p-4">
+                          <div className="flex justify-center">
+                            <span className="w-10 h-8 flex items-center justify-center bg-purple-50 text-purple-600 font-black rounded-lg border border-purple-100">{clinicScans.length}</span>
+                          </div>
+                        </td>
+                        <td className="p-4 align-middle">
+                          <div className="flex justify-center">
+                            <button 
+                              className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors shadow-sm text-xs font-bold w-max"
+                              onClick={(e) => { e.stopPropagation(); if (clinic.phone) window.open(`tel:${clinic.phone}`, '_self'); }}
+                              title={clinic.phone ? `Call +91 ${clinic.phone}` : "Call"}
+                            >
+                              <Icon icon="solar:phone-calling-bold-duotone" width="16" />
+                              {clinic.phone ? `+91 ${clinic.phone}` : "N/A"}
+                            </button>
+                          </div>
+                        </td>
+                        <td className="p-4 align-middle">
+                          <div className="flex justify-center">
+                            <button 
+                              className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-50 text-green-600 hover:bg-green-100 transition-colors shadow-sm text-xs font-bold w-max"
+                              onClick={(e) => { e.stopPropagation(); if (clinic.phone) window.open(`https://wa.me/91${clinic.phone}`, '_blank'); }}
+                              title={clinic.phone ? `WhatsApp +91 ${clinic.phone}` : "WhatsApp"}
+                            >
+                              <Icon icon="logos:whatsapp-icon" width="16" />
+                              {clinic.phone ? `+91 ${clinic.phone}` : "N/A"}
+                            </button>
+                          </div>
+                        </td>
+                        <td className="p-4 align-middle">
+                          <div className="flex justify-center">
+                            <button 
+                              className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors shadow-sm text-xs font-bold w-max"
+                              onClick={(e) => { e.stopPropagation(); navigate('/dashboard/chat', { state: { clinicName: clinic.clinic_name, openChat: true } }); }}
+                              title="Web Chat"
+                            >
+                              <Icon icon="solar:chat-round-dots-bold-duotone" width="16" />
+                              Web Chat
+                            </button>
+                          </div>
+                        </td>
+                        <td className="p-4 align-middle">
+                          <div className="flex justify-center">
+                            <button 
+                              className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors shadow-sm text-xs font-bold w-max"
+                              onClick={(e) => { e.stopPropagation(); navigate('/dashboard/video-consult', { state: { clinicName: clinic.clinic_name, openConsult: true } }); }}
+                              title="Book Video Appointment"
+                            >
+                              <Icon icon="solar:videocamera-bold-duotone" width="16" />
+                              Video Appt
+                            </button>
+                          </div>
+                        </td>
+                        <td className="p-4 align-middle">
+                          <div className="flex justify-center">
+                            <button 
+                              className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-teal-50 text-teal-600 hover:bg-teal-100 transition-colors shadow-sm text-xs font-bold w-max"
+                              onClick={(e) => { e.stopPropagation(); navigate('/dashboard/attend-clinics', { state: { clinicName: clinic.clinic_name, openAppointment: true } }); }}
+                              title="Book Appointment"
+                            >
+                              <Icon icon="solar:calendar-add-bold-duotone" width="16" />
+                              Book Appt
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+
+                      {/* Expanded Details Row */}
+                      {expandedDataClinicId === clinic.cid && (
+                        <tr className="bg-slate-50/30 border-b border-slate-200 shadow-inner">
+                          <td colSpan={10} className="p-6">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                              
+                              {/* Prescriptions */}
+                              <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm flex flex-col gap-3 relative overflow-hidden">
+                                <div className="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
+                                <h4 className="text-[10px] font-black uppercase tracking-widest text-blue-500 flex items-center gap-2">
+                                  <Icon icon="solar:document-medicine-bold-duotone" width="16" />
+                                  Prescriptions List
+                                </h4>
+                                <div className="flex flex-col gap-2 max-h-40 overflow-y-auto custom-scrollbar">
+                                  {clinicPrescriptions.length > 0 ? clinicPrescriptions.map((p, idx) => (
+                                    <div 
+                                      key={idx} 
+                                      className="flex flex-col bg-slate-50 p-2 rounded-md cursor-pointer hover:bg-slate-100 transition-colors hover:shadow-sm"
+                                      onClick={() => setSelectedRecordDetails(p)}
+                                    >
+                                      <span className="text-xs font-bold text-slate-700 truncate">{p.medication || "Prescription"}</span>
+                                      <span className="text-[10px] text-slate-500">{dayjs(p.createdAt).format("DD MMM YYYY")}</span>
+                                    </div>
+                                  )) : <span className="text-xs text-slate-400 font-medium italic">No prescriptions found.</span>}
+                                </div>
+                              </div>
+
+                              {/* Lab Reports */}
+                              <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm flex flex-col gap-3 relative overflow-hidden">
+                                <div className="absolute top-0 left-0 w-1 h-full bg-rose-500"></div>
+                                <h4 className="text-[10px] font-black uppercase tracking-widest text-rose-500 flex items-center gap-2">
+                                  <Icon icon="solar:test-tube-bold-duotone" width="16" />
+                                  Lab Reports List
+                                </h4>
+                                <div className="flex flex-col gap-2 max-h-40 overflow-y-auto custom-scrollbar">
+                                  {clinicLabs.length > 0 ? clinicLabs.map((l, idx) => (
+                                    <div 
+                                      key={idx} 
+                                      className="flex flex-col bg-slate-50 p-2 rounded-md cursor-pointer hover:bg-slate-100 transition-colors hover:shadow-sm"
+                                      onClick={() => setSelectedRecordDetails(l)}
+                                    >
+                                      <span className="text-xs font-bold text-slate-700 truncate">{l.labType || "Lab Report"}</span>
+                                      <span className="text-[10px] text-slate-500">{dayjs(l.createdAt).format("DD MMM YYYY")}</span>
+                                    </div>
+                                  )) : <span className="text-xs text-slate-400 font-medium italic">No lab reports found.</span>}
+                                </div>
+                              </div>
+
+                              {/* Scan Reports */}
+                              <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm flex flex-col gap-3 relative overflow-hidden">
+                                <div className="absolute top-0 left-0 w-1 h-full bg-purple-500"></div>
+                                <h4 className="text-[10px] font-black uppercase tracking-widest text-purple-500 flex items-center gap-2">
+                                  <Icon icon="solar:scanner-bold-duotone" width="16" />
+                                  Scan Reports List
+                                </h4>
+                                <div className="flex flex-col gap-2 max-h-40 overflow-y-auto custom-scrollbar">
+                                  {clinicScans.length > 0 ? clinicScans.map((s, idx) => (
+                                    <div 
+                                      key={idx} 
+                                      className="flex flex-col bg-slate-50 p-2 rounded-md cursor-pointer hover:bg-slate-100 transition-colors hover:shadow-sm"
+                                      onClick={() => setSelectedRecordDetails(s)}
+                                    >
+                                      <span className="text-xs font-bold text-slate-700 truncate">{s.scanType || "Scan Report"}</span>
+                                      <span className="text-[10px] text-slate-500">{dayjs(s.createdAt).format("DD MMM YYYY")}</span>
+                                    </div>
+                                  )) : <span className="text-xs text-slate-400 font-medium italic">No scan reports found.</span>}
+                                </div>
+                              </div>
+                              
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan={10} className="p-8 text-center text-slate-400 font-bold text-xs uppercase tracking-widest">
+                    No Clinic Data Found
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <AIReportModal
         selectedReportNotes={selectedReportNotes}
         onClose={() => setSelectedReportNotes(null)}
       />
+
+      {/* Record Details Modal */}
+      {selectedRecordDetails && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={() => setSelectedRecordDetails(null)}></div>
+          <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200">
+             {/* Header */}
+             <div className="flex justify-between items-center p-6 border-b border-slate-100 bg-slate-50/50">
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${selectedRecordDetails._type === 'prescription' ? 'bg-blue-100 text-blue-600' : selectedRecordDetails._type === 'lab' ? 'bg-rose-100 text-rose-600' : 'bg-purple-100 text-purple-600'}`}>
+                    <Icon icon={selectedRecordDetails._type === 'prescription' ? 'solar:document-medicine-bold-duotone' : selectedRecordDetails._type === 'lab' ? 'solar:test-tube-bold-duotone' : 'solar:scanner-bold-duotone'} width={24} />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-black text-slate-800">
+                      {selectedRecordDetails._type === 'prescription' ? 'Prescription Details' : 
+                       selectedRecordDetails._type === 'lab' ? 'Lab Report Details' : 'Scan Report Details'}
+                    </h2>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{dayjs(selectedRecordDetails.createdAt).format("DD MMM YYYY, hh:mm A")}</span>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setSelectedRecordDetails(null)}
+                  className="p-2 hover:bg-slate-200 rounded-xl transition-colors text-slate-400 hover:text-slate-600"
+                >
+                  <Icon icon="solar:close-circle-bold" className="text-2xl" />
+                </button>
+             </div>
+             
+             {/* Body */}
+             <div className="p-6 overflow-y-auto custom-scrollbar flex-1 flex flex-col gap-8">
+                
+                {/* Medicines if prescription */}
+                {selectedRecordDetails._type === 'prescription' && selectedRecordDetails.medicinesData?.length > 0 && (
+                  <div>
+                    <h3 className="text-sm font-black uppercase tracking-wider text-slate-800 mb-4 flex items-center gap-2">
+                      <Icon icon="solar:pill-bold-duotone" className="text-blue-500" width={18} />
+                      Prescribed Medicines
+                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {selectedRecordDetails.medicinesData.map((med, i) => (
+                        <div key={i} className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex flex-col gap-3 hover:shadow-md transition-shadow">
+                          <span className="font-bold text-slate-800 text-base">{med.medication || med.medicationName}</span>
+                          <div className="flex flex-wrap gap-2 text-[10px]">
+                            <span className="bg-white px-2.5 py-1.5 rounded-lg border border-slate-200 font-bold text-slate-600 shadow-sm">{med.morning}-{med.afternoon}-{med.night}</span>
+                            <span className="bg-white px-2.5 py-1.5 rounded-lg border border-slate-200 font-bold text-slate-600 shadow-sm">{med.dosage} Unit</span>
+                            <span className="bg-white px-2.5 py-1.5 rounded-lg border border-slate-200 font-bold text-slate-600 shadow-sm uppercase">{med.af_bf}</span>
+                            <span className="bg-white px-2.5 py-1.5 rounded-lg border border-slate-200 font-bold text-slate-600 shadow-sm">{med.days} Days</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Documents / PDF */}
+                {(() => {
+                  let fileUrl = selectedRecordDetails.finalReportFileUrl || 
+                               (selectedRecordDetails.finalReportFileUrls && selectedRecordDetails.finalReportFileUrls[0]) || 
+                               selectedRecordDetails.fileUrl || 
+                               selectedRecordDetails.documentPath;
+                  
+                  if (!fileUrl) return null;
+                  
+                  const cleanUrl = fileUrl.replace(/^\/upload\//, '/uploads/');
+                  const isLocal = window?.location?.hostname === "localhost" || window?.location?.hostname === "127.0.0.1";
+                  const baseUrl = isLocal 
+                    ? (selectedRecordDetails._subdomain === 'demo2' ? 'http://localhost:4026' : 'http://localhost:3026') 
+                    : `https://${selectedRecordDetails._subdomain || 'demo'}.physicianhealthnet.com/api`;
+                  const url = cleanUrl.startsWith('http') ? cleanUrl : `${baseUrl}${cleanUrl}`;
+                  
+                  return (
+                    <div>
+                      <h3 className="text-sm font-black uppercase tracking-wider text-slate-800 mb-4 flex items-center gap-2">
+                        <Icon icon="solar:document-text-bold-duotone" className="text-rose-500" width={18} />
+                        Attached Document
+                      </h3>
+                      <div className="bg-rose-50/50 p-5 rounded-2xl border border-rose-100 flex items-center justify-between shadow-sm">
+                        <div className="flex items-center gap-4">
+                           <div className="w-12 h-12 rounded-xl bg-white border border-rose-100 flex items-center justify-center text-rose-500 shadow-sm">
+                              <Icon icon="solar:file-download-bold-duotone" width="28" />
+                           </div>
+                           <div className="flex flex-col">
+                             <span className="font-bold text-slate-800 text-sm">Medical Report Document</span>
+                             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-0.5">PDF / Image</span>
+                           </div>
+                        </div>
+                        <a 
+                          href={url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="bg-rose-500 hover:bg-rose-600 text-white px-5 py-2.5 rounded-xl font-bold text-xs transition-colors shadow-md shadow-rose-200/50 flex items-center gap-2"
+                        >
+                          View Document
+                          <Icon icon="solar:export-bold-duotone" />
+                        </a>
+                      </div>
+                    </div>
+                  );
+                })()}
+                
+                {/* If no meds and no doc */}
+                {(!selectedRecordDetails.medicinesData || selectedRecordDetails.medicinesData.length === 0) && !selectedRecordDetails.finalReportFileUrl && !selectedRecordDetails.finalReportFileUrls && !selectedRecordDetails.fileUrl && !selectedRecordDetails.documentPath && (
+                   <div className="flex flex-col items-center justify-center py-16 text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200 mt-4">
+                     <Icon icon="solar:ghost-smile-bold-duotone" className="text-6xl mb-4 opacity-40" />
+                     <span className="font-bold text-sm tracking-widest uppercase text-slate-500">No Data Available</span>
+                     <span className="text-xs text-slate-400 mt-2 font-medium max-w-[250px] text-center">There are no medicines or documents attached to this record.</span>
+                   </div>
+                )}
+             </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
