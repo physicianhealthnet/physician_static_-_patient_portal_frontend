@@ -3,13 +3,16 @@ import { Helmet } from "react-helmet-async";
 
 const SEO = ({ title, description, keywords, type = "website", url = "", schema }) => {
   const fullUrl = `https://physicianhealthnet.com${url}`;
+  const defaultKeywords = "health, healthcare, doctor, patient, diseases, treatment, health net, physician, physician health net, physicianhealthnet, PHN, phn, Phn, online consultation, medical records, clinics, hospital, specialist";
+  const finalKeywords = keywords ? `${keywords}, ${defaultKeywords}` : defaultKeywords;
+
   return (
     <Helmet>
       {/* Primary Meta Tags */}
       <title>{title}</title>
       <meta name="title" content={title} />
       <meta name="description" content={description} />
-      {keywords && <meta name="keywords" content={keywords} />}
+      <meta name="keywords" content={finalKeywords} />
 
       {/* Open Graph / Facebook */}
       <meta property="og:type" content={type} />
