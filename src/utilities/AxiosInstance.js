@@ -1,5 +1,5 @@
 import axios from "axios";
-
+import Cookies from "js-cookie";
 const AxiosInstanceSecondryServer = axios.create({
   baseURL: "https://phnappointment.physicianhealthnet.com/api/"
   // baseURL: "http://localhost:3027/"
@@ -41,6 +41,11 @@ AxiosInstanceSecondryServer.interceptors.response.use(
     if (error.response?.status === 401 && !isAuthRoute) {
       console.warn("Unauthorized access detected, redirecting to login...");
       sessionStorage.removeItem("token");
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      localStorage.removeItem("patientData");
+      localStorage.removeItem("userData");
+      Cookies.remove("token");
       window.location.href = "/login";
     }
 

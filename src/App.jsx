@@ -5,11 +5,29 @@ import {
   useLocation,
   Navigate,
 } from "react-router-dom";
+import Cookies from "js-cookie";
 import Home from "./pages/Home";
 import Auth from "./pages/Auth";
 import { HomeNavBar } from "./components/Navbar";
 import { DashboardNavbar } from "./components/DashboardNavbar";
 import Footer from "./components/Footer";
+
+// Initialize auth from persistent storage (Remember me functionality)
+const initializeAuth = () => {
+  const persistentToken = Cookies.get("token");
+  if (persistentToken && !sessionStorage.getItem("token")) {
+    sessionStorage.setItem("token", persistentToken);
+    
+    const user = localStorage.getItem("user");
+    const patientData = localStorage.getItem("patientData");
+    const userData = localStorage.getItem("userData");
+    
+    if (user) sessionStorage.setItem("user", user);
+    if (patientData) sessionStorage.setItem("patientData", patientData);
+    if (userData) sessionStorage.setItem("userData", userData);
+  }
+};
+initializeAuth();
 
 import Security from "./pages/Security";
 import Help from "./pages/Help";

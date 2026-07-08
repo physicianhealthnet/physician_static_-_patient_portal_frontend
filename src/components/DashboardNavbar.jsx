@@ -1,6 +1,7 @@
 import { Icon } from "@iconify/react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Cookies from "js-cookie";
 import FindDoctorModal from "./FindDoctorModal";
 
 const SubMenuForUser = ({ point, setOpenSubMenu }) => {
@@ -8,6 +9,11 @@ const SubMenuForUser = ({ point, setOpenSubMenu }) => {
 
   const handleLogout = () => {
     sessionStorage.clear();
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    localStorage.removeItem("patientData");
+    localStorage.removeItem("userData");
+    Cookies.remove("token");
     navigate("/");
     window.location.reload();
   };

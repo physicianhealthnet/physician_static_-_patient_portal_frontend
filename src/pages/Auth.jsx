@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import loginIllustration from "../assets/login_illustration.png";
 import { AxiosInstanceDependency } from "../utilities/AxiosInstance";
 import { jwtDecode } from "jwt-decode";
+import Cookies from "js-cookie";
 import { sendWhatsAppNotification } from "../utilities/whatsappNotify.js";
 
 function Auth({ initialTab = "login" }) {
@@ -31,19 +32,26 @@ function Auth({ initialTab = "login" }) {
   const handleLogin = async (submitData) => {
     setLoginLoading(true);
     setPasswordError("");
+    const { remember, ...apiData } = submitData;
+    
     try {
       const res = await AxiosInstanceDependency.post(
         "auth/patient-login",
-        submitData,
+        apiData,
       );
       console.log("Patient Login response:", res.data);
 
       const token = res.data?.token;
       if (token) {
         sessionStorage.setItem("token", token);
+        if (remember) {
+          Cookies.set("token", token, { expires: 30 });
+        }
+        
         try {
           const decodedUser = jwtDecode(token);
           sessionStorage.setItem("user", JSON.stringify(decodedUser));
+          if (remember) localStorage.setItem("user", JSON.stringify(decodedUser));
         } catch (error) {
           console.error("Failed to decode token:", error);
         }
@@ -51,9 +59,11 @@ function Auth({ initialTab = "login" }) {
         // Store patient-specific data separately
         if (res.data.patient) {
           sessionStorage.setItem("patientData", JSON.stringify(res.data.patient));
+          if (remember) localStorage.setItem("patientData", JSON.stringify(res.data.patient));
         }
         if (res.data.user) {
           sessionStorage.setItem("userData", JSON.stringify(res.data.user));
+          if (remember) localStorage.setItem("userData", JSON.stringify(res.data.user));
         }
 
         navigate("/dashboard/attend-clinics");
@@ -333,6 +343,7 @@ function Auth({ initialTab = "login" }) {
                 const submitData = {
                   credential: rawData.email,
                   password: rawData.password,
+                  remember: e.target.remember.checked,
                 };
 
                 handleLogin(submitData);
@@ -377,6 +388,7 @@ function Auth({ initialTab = "login" }) {
                   <input
                     type="checkbox"
                     id="remember"
+                    name="remember"
                     className="w-4 h-4 accent-[#14bef0] cursor-pointer"
                     defaultChecked
                   />
