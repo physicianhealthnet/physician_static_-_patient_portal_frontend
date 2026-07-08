@@ -228,13 +228,7 @@ const PatientDashboardOverview = () => {
       const isFuture =
         new Date(app.appointmentDate) >= new Date().setHours(0, 0, 0, 0);
       const status = (app.status || "").toLowerCase().trim();
-      const isCheckedOut = status.includes("check") && status.includes("out");
-      const isFinished =
-        status === "completed" ||
-        isCheckedOut ||
-        status === "cancelled" ||
-        status === "reject";
-      return isFuture && !isFinished;
+      return isFuture && status === "scheduled";
     })
     .sort((a, b) => new Date(a.appointmentDate) - new Date(b.appointmentDate));
 
@@ -246,8 +240,8 @@ const PatientDashboardOverview = () => {
   const futureVideoAppointments = videoAppointments
     .filter((app) => {
       const isFuture = new Date(app.date) >= new Date().setHours(0, 0, 0, 0);
-      const isFinished = app.status === "Completed" || app.status === "Cancelled";
-      return isFuture && !isFinished;
+      const status = (app.status || "").toLowerCase().trim();
+      return isFuture && status === "scheduled";
     })
     .map((app) => ({
       ...app,

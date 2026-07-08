@@ -1,11 +1,18 @@
 import React from 'react'
 import { Icon } from '@iconify/react'
 import { useNavigate } from 'react-router-dom'
+import SEO from '../components/SEO'
 
 export default function ContactUs() {
     const navigate = useNavigate();
     return (
         <div className='w-full min-h-screen bg-[#f8f9fa] pt-12 pb-20 px-5'>
+            <SEO 
+                title="Contact Us | Physician Health Net"
+                description="Get in touch with the Physician Health Net support team. We're here to assist you with appointments, clinics, and medical records."
+                keywords="contact physician health net, support, customer service"
+                url="/contact-us"
+            />
             <div className='max-w-4xl mx-auto'>
                 <button 
                    onClick={() => navigate(-1)} 

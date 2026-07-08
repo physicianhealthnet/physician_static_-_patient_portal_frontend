@@ -1,11 +1,18 @@
 import React from 'react'
 import { Icon } from '@iconify/react'
 import { useNavigate } from 'react-router-dom'
+import SEO from '../components/SEO'
 
 export default function Help() {
     const navigate = useNavigate();
     return (
         <div className='w-full min-h-screen bg-[#f8f9fa] pt-8 pb-20 px-5'>
+            <SEO 
+                title="Help Center | Physician Health Net"
+                description="Need help with Physician Health Net? Visit our Help Center for FAQs, technical support, and guides for patients and doctors."
+                keywords="help center, technical support, FAQs, physician health net"
+                url="/help"
+            />
             <div className='max-w-4xl mx-auto'>
                 <button 
                    onClick={() => navigate(-1)} 

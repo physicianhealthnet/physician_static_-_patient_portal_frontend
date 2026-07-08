@@ -6,6 +6,7 @@ import { AxiosInstanceDependency } from "../utilities/AxiosInstance";
 import { jwtDecode } from "jwt-decode";
 import Cookies from "js-cookie";
 import { sendWhatsAppNotification } from "../utilities/whatsappNotify.js";
+import SEO from "../components/SEO";
 
 function Auth({ initialTab = "login" }) {
   const navigate = useNavigate();
@@ -181,6 +182,12 @@ function Auth({ initialTab = "login" }) {
 
   return (
     <div className="w-full min-h-[calc(100vh-100px)] flex flex-col items-center pt-8 bg-[#f9f9f9]">
+      <SEO 
+        title={activeTab === 'login' ? 'Login | Physician Health Net' : 'Register | Physician Health Net'}
+        description="Login or register to book doctor appointments, manage your medical records, and consult with clinics online."
+        keywords="patient login, register patient, doctor appointment booking"
+        url={`/${activeTab === 'login' ? 'login' : 'register'}`}
+      />
       {/* Tabs */}
       <div className="flex gap-16 border-b border-gray-200 mb-12 w-full max-w-4xl justify-center">
         <button

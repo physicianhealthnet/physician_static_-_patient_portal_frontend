@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Icon } from "@iconify/react";
 import doctorsDataJson from "../data/doctorsData.json";
+import SEO from "../components/SEO";
 
 function FindClinics() {
   const [searchParams] = useSearchParams();
@@ -106,6 +107,12 @@ function FindClinics() {
 
   return (
     <div className="min-h-screen bg-[#f0f0f5] py-8">
+      <SEO 
+        title={`${clinics.length > 0 ? clinics.length : 'Find'} Clinics & Hospitals | Physician Health Net`}
+        description="Find and book appointments with the best clinics and hospitals near you."
+        keywords="find clinics, book hospital appointment, clinics near me"
+        url="/find-clinics"
+      />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Search Breadcrumb / Title area */}
         <div className="mb-6">

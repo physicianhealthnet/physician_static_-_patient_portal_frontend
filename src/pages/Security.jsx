@@ -1,11 +1,18 @@
 import React from 'react'
 import { Icon } from '@iconify/react'
 import { useNavigate } from 'react-router-dom'
+import SEO from '../components/SEO'
 
 export default function Security() {
     const navigate = useNavigate();
     return (
         <div className='w-full min-h-screen bg-[#f8f9fa] pt-8 pb-20 px-5'>
+            <SEO 
+                title="Security Policies | Physician Health Net"
+                description="Learn about our robust security policies. At Physician Health Net, we prioritize the safety and privacy of patient data."
+                keywords="healthcare data security, patient privacy, secure medical records"
+                url="/security"
+            />
             <div className='max-w-4xl mx-auto'>
                 <button 
                    onClick={() => navigate(-1)} 

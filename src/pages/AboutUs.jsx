@@ -1,11 +1,18 @@
 import React from 'react'
 import { Icon } from '@iconify/react'
 import { useNavigate } from 'react-router-dom'
+import SEO from '../components/SEO'
 
 export default function AboutUs() {
     const navigate = useNavigate();
     return (
         <div className='w-full min-h-screen bg-[#f8f9fa] pt-12 pb-20 px-5'>
+            <SEO 
+                title="About Us | Physician Health Net"
+                description="Learn about Physician Health Net's mission to bridge the gap between patients and quality healthcare providers through innovative digital solutions."
+                keywords="about physician health net, healthcare platform mission, medical tech vision"
+                url="/about-us"
+            />
             <div className='max-w-4xl mx-auto'>
                 <button 
                    onClick={() => navigate(-1)} 
