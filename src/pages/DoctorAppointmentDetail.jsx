@@ -1,9 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Icon } from "@iconify/react";
 import { useNavigate, useParams } from "react-router-dom";
-import {
-  AxiosInstanceSecondryServer,
-} from "../utilities/AxiosInstance.js";
+import { AxiosInstanceSecondryServer } from "../utilities/AxiosInstance.js";
 import { sendWhatsAppNotification } from "../utilities/whatsappNotify.js";
 import doctorsData from "../data/doctorsData.json";
 
@@ -597,40 +595,12 @@ function DoctorAppointmentDetail() {
         {/* Left Column - Doctor Profile & Slots */}
         <div className="flex-1 flex flex-row gap-6 min-w-0">
           {/* Profile Card */}
-          <div className="bg-white w-2/5 rounded-lg shadow-sm border border-gray-100 overflow-hidden">
-            <div className="w-full flex flex-col">
+          <div className="bg-white w-2/5 rounded-lg shadow-sm border border-gray-100 overflow-hidden p-2">
+            <div className="w-full flex flex-row divide-gray-300 divide-x">
               <div className="p-6 pb-3 flex flex-col md:flex-row gap-8 w-full">
-                {/* Doctor/Clinic Image Section */}
-                {/* <div className="shrink-0 flex justify-center">
-                  <div className="relative">
-                    <div className="w-28 h-28 rounded-2xl border-4 border-gray-50 flex items-center justify-center bg-[#14bef0]/5 overflow-hidden shadow-sm relative z-10">
-                      {targetedDoctor.clinic_image ? (
-                        <img
-                          src={targetedDoctor.clinic_image}
-                          alt={
-                            targetedDoctor.clinic_name ||
-                            targetedDoctor.clinicName ||
-                            "Clinic"
-                          }
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <img
-                          src={`https://api.dicebear.com/7.x/initials/svg?seed=${(targetedDoctor.doctor_name || targetedDoctor.doctorName || "Doctor").replace("Dr. ", "")}&backgroundColor=14bef0&textColor=ffffff`}
-                          alt={
-                            targetedDoctor.doctor_name ||
-                            targetedDoctor.doctorName ||
-                            "Doctor"
-                          }
-                          className="w-full h-full object-cover text-xs"
-                        />
-                      )}
-                    </div>
-                  </div>
-                </div> */}
-                <div className="flex flex-row justify-between gap-4 min-w-full">
+                <div className="flex flex-col justify-between gap-4 min-w-full">
                   {/* Info Detail Section */}
-                  <div className="flex flex-col w-2/3">
+                  <div className="flex flex-col">
                     <div className="flex flex-col gap-1">
                       <h1 className="text-2xl md:text-3xl font-semibold">
                         {targetedDoctor.clinic_name ||
@@ -692,26 +662,28 @@ function DoctorAppointmentDetail() {
                       </a>
                     </div>
                   </div>
-                  <div className="flex flex-col gap-2 w-1/3 h-full justify-start">
+                  <div className="flex flex-col gap-2 h-full justify-start">
                     <button
                       onClick={() => {
                         setSelectedClinic(targetedDoctor);
                         setShowContactModal(true);
                       }}
-                      className="w-full bg-[#14bef0] text-white px-6 py-2.5 rounded shadow-sm font-bold text-sm flex items-center justify-center gap-2 hover:bg-[#0ba8d6] transition-colors cursor-pointer"
+                      className="w-full bg-[#14bef0] text-white px-4 py-2.5 rounded shadow-sm font-bold text-sm flex items-center justify-start gap-2 hover:bg-[#0ba8d6] transition-colors cursor-pointer"
                     >
+                      <Icon icon={"healthicons:doctor-male"} className="text-xl" />
                       For Doctor's Appointment
                     </button>
                     <button
-                      onClick={() => navigate('/dashboard/video-consult')}
-                      className="w-full bg-purple-500 text-white px-6 py-2.5 rounded shadow-sm font-bold text-sm flex items-center justify-center gap-2 hover:bg-purple-600 transition-colors cursor-pointer"
+                      onClick={() => navigate("/dashboard/video-consult")}
+                      className="w-full bg-purple-500 text-white px-4 py-2.5 rounded shadow-sm font-bold text-sm flex items-center justify-start gap-2 hover:bg-purple-600 transition-colors cursor-pointer"
                     >
+                      <Icon icon={"fluent:video-chat-16-regular"} className="text-xl" />
                       Request Video Consult
                     </button>
                     <button
                       onClick={(e) => openWhatsAppModal(e, { label: "Clinic" })}
                       disabled={isSendingShare}
-                      className="w-full bg-gray-500 text-white px-6 py-2.5 rounded shadow-sm font-bold text-sm flex items-center justify-center gap-2 hover:bg-gray-800 transition-colors cursor-pointer mt-auto"
+                      className="w-full bg-gray-500 text-white px-4 py-2.5 rounded shadow-sm font-bold text-sm flex items-center justify-start gap-2 hover:bg-gray-800 transition-colors cursor-pointer"
                     >
                       {isSendingShare && !shareModalClinic ? (
                         <Icon
@@ -720,116 +692,116 @@ function DoctorAppointmentDetail() {
                         />
                       ) : (
                         <>
-                          {/* <Icon icon="mdi:whatsapp" className="text-lg" /> */}
+                          <Icon icon="mdi:whatsapp" className="text-xl" />
                           <span>Get Clinic Details on WhatsApp</span>
                         </>
                       )}
                     </button>
-                  </div>
-                </div>
-              </div>
-              <div className="w-full flex flex-col md:flex-row items-stretch md:items-end p-6 pb-3 gap-6">
-                <div className="flex flex-col gap-4 w-full pl-5">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8">
-                    {[
-                      {
-                        label: "Contact Pharmacy",
-                        discription: "For Medicines or Refills",
-                        icon: "mdi:pharmacy",
-                        key: "Pharmacy",
-                      },
-                      {
-                        label: "Contact Lab",
-                        discription: "For Blood Tests or Reports",
-                        icon: "mdi:flask-outline",
-                        key: "Lab",
-                      },
-                      {
-                        label: "Contact Scan Center",
-                        discription: "X-Ray or CT Scan or MRI",
-                        icon: "mdi:radiology-box",
-                        key: "Scan Center",
-                      },
-                      {
-                        label: "Contact Emergency",
-                        discription: "For Emergency Services",
-                        icon: "mdi:ambulance",
-                        isEmergency: true,
-                      },
-                      {
-                        label: "Contact Customer Care",
-                        discription: "For Assistance",
-                        icon: "mdi:headset",
-                      },
-                      {
-                        label: "Get Directions",
-                        discription: "Driving to the Clinic",
-                        icon: "mdi:map-marker-path",
-                        link: targetedDoctor?.clinic_location,
-                      },
-                    ].map((item, i) => (
-                      <button
-                        key={i}
-                        onClick={(e) =>
-                          openWhatsAppModal(e, {
-                            label: item.key || item.label,
-                            ...item,
-                          })
-                        }
-                        className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-all group border border-transparent hover:border-gray-100 text-left"
-                      >
-                        <div
-                          className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 shadow-sm transition-transform group-hover:scale-110 ${
-                            item.isEmergency
-                              ? "bg-red-50 text-red-600"
-                              : "bg-[#14bef0]/10 text-[#14bef0]"
-                          }`}
-                        >
-                          <Icon icon={item.icon} className="text-xl" />
+                    <div className="flex-1 flex p-4 w-full rounded border border-gray-100 shadow-sm items-center gap-4 bg-white">
+                      <div className="w-12 h-12 rounded bg-[#14bef0]/10 flex items-center justify-center shrink-0">
+                        <Icon
+                          icon="mdi:cash-check"
+                          className="w-6 h-6 text-[#14bef0]"
+                        />
+                      </div>
+                      <div>
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-[10px] text-gray-400 font-black uppercase tracking-tighter">
+                            Pay at Clinic
+                          </span>
                         </div>
-                        <p
-                          className={`text-left text-xs transition-colors ${
-                            item.isEmergency
-                              ? "text-red-600"
-                              : "text-gray-700 group-hover:text-[#14bef0]"
-                          }`}
-                        >
-                          <span className="text-[10px] text-left transition-colors">
-                            {item?.discription}
-                          </span>
-                          <br />
-                          <span className="text-sm text-left font-bold transition-colors">
-                            {item.label}
-                          </span>
+                        <p className="text-[10px] text-[#14bef0] font-bold tracking-widest uppercase">
+                          Verified Doctors Consultation Fee
                         </p>
-                      </button>
-                    ))}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-            <div className="flex w-full">
-              <div className="p-6 w-full">
-                <div className="flex-1 flex p-4 w-full rounded border border-gray-100 shadow-sm items-center gap-4 bg-white">
-                  <div className="w-12 h-12 rounded bg-[#14bef0]/10 flex items-center justify-center shrink-0">
-                    <Icon
-                      icon="mdi:cash-check"
-                      className="w-6 h-6 text-[#14bef0]"
-                    />
-                  </div>
-                  <div>
-                    <div className="flex items-baseline gap-1">
-                      {/* <span className="text-xl font-black text-gray-800">
-                        ₹{targetedDoctor.fees || "0"}
-                      </span> */}
-                      <span className="text-[10px] text-gray-400 font-black uppercase tracking-tighter">
-                        Pay at Clinic
-                      </span>
-                    </div>
-                    <p className="text-[10px] text-[#14bef0] font-bold tracking-widest uppercase">
-                      Verified Doctors Consultation Fee
-                    </p>
-                  </div>
+              <div className="w-full flex flex-col divide-y divide-gray-300">
+                <div className=" p-6 flex flex-row items-center gap-2">
+                  <Icon
+                    icon={"mdi:support"}
+                    className="text-[#14bef0] text-2xl"
+                  />
+                  <h1 className="font-bold text-xl ">
+                    Clinic Support Contacts
+                  </h1>
+                </div>
+                <div className="flex flex-col p-6">
+                  {[
+                    {
+                      label: "Contact Pharmacy",
+                      discription: "For Medicines or Refills",
+                      icon: "mdi:pharmacy",
+                      key: "Pharmacy",
+                    },
+                    {
+                      label: "Contact Lab",
+                      discription: "For Blood Tests or Reports",
+                      icon: "mdi:flask-outline",
+                      key: "Lab",
+                    },
+                    {
+                      label: "Contact Scan Center",
+                      discription: "X-Ray or CT Scan or MRI",
+                      icon: "mdi:radiology-box",
+                      key: "Scan Center",
+                    },
+                    {
+                      label: "Contact Emergency",
+                      discription: "For Emergency Services",
+                      icon: "mdi:ambulance",
+                      isEmergency: true,
+                    },
+                    {
+                      label: "Contact Customer Care",
+                      discription: "For Assistance",
+                      icon: "mdi:headset",
+                    },
+                    {
+                      label: "Get Directions",
+                      discription: "Driving to the Clinic",
+                      icon: "mdi:map-marker-path",
+                      link: targetedDoctor?.clinic_location,
+                    },
+                  ].map((item, i) => (
+                    <button
+                      key={i}
+                      onClick={(e) =>
+                        openWhatsAppModal(e, {
+                          label: item.key || item.label,
+                          ...item,
+                        })
+                      }
+                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-all group border border-transparent hover:border-gray-100 text-left"
+                    >
+                      <div
+                        className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 shadow-sm transition-transform group-hover:scale-110 ${
+                          item.isEmergency
+                            ? "bg-red-50 text-red-600"
+                            : "bg-[#14bef0]/10 text-[#14bef0]"
+                        }`}
+                      >
+                        <Icon icon={item.icon} className="text-xl" />
+                      </div>
+                      <p
+                        className={`text-left text-xs transition-colors ${
+                          item.isEmergency
+                            ? "text-red-600"
+                            : "text-gray-700 group-hover:text-[#14bef0]"
+                        }`}
+                      >
+                        <span className="text-[10px] text-left transition-colors">
+                          {item?.discription}
+                        </span>
+                        <br />
+                        <span className="text-sm text-left font-bold transition-colors">
+                          {item.label}
+                        </span>
+                      </p>
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>

@@ -68,7 +68,7 @@ export const HomeNavBar = () => {
               Find a Clinic
             </li>
             <li
-              onClick={() => navigate("/dashboard/appointments")}
+              onClick={() => navigate("/dashboard/chat")}
               className="cursor-pointer font-medium text-[#2d2d32] text-[15px] hover:text-[#14bef0] transition-colors"
             >
               Chat
@@ -86,7 +86,7 @@ export const HomeNavBar = () => {
           {user && (
             <ul className="flex flex-row gap-6 items-center max-lg:hidden">
               <li
-                onClick={() => navigate("/dashboard")}
+                onClick={() => navigate("/dashboard/dashboard")}
                 className="cursor-pointer font-medium text-[#4b4b4b] text-[15px] hover:text-[#14bef0] transition-colors"
               >
                 My Dashboard
@@ -104,7 +104,7 @@ export const HomeNavBar = () => {
                 My Hospitals
               </li>
               <li
-                onClick={() => navigate("/dashboard/attend-clinics")}
+                onClick={() => navigate("/dashboard/prescriptions")}
                 className="cursor-pointer font-medium text-[#4b4b4b] text-[15px] hover:text-[#14bef0] transition-colors"
               >
                 My Prescriptions

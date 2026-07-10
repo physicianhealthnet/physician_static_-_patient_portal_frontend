@@ -412,7 +412,7 @@ const PatientDashboardOverview = () => {
               BOOK APPOINTMENT
             </button>
             <button
-              onClick={() => navigate("/dashboard/all-records")}
+              onClick={() => navigate("/dashboard/medical-records")}
               className="bg-white/20 hover:bg-white/30 text-white px-6 py-2 rounded-lg font-bold text-sm backdrop-blur-sm transition-colors border border-white/30"
             >
               VIEW RECORDS
