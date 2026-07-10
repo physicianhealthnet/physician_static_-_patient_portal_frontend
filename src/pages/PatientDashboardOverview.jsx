@@ -53,6 +53,7 @@ const PatientDashboardOverview = () => {
   const [appointments, setAppointments] = useState([]);
   const [videoAppointments, setVideoAppointments] = useState([]);
   const [prescriptions, setPrescriptions] = useState([]);
+  const [bills, setBills] = useState([]);
   const [loading, setLoading] = useState(true);
   const [clinicIdResolvedData, setClinicIdResolvedData] = useState([]);
   const [selectedReportNotes, setSelectedReportNotes] = useState(null);
@@ -104,7 +105,7 @@ const PatientDashboardOverview = () => {
                 ? "http://localhost:4026"
                 : "http://localhost:3026";
           }
-          const [scanRes, labRes, rxRes, assessRes] = await Promise.all([
+          const [scanRes, labRes, rxRes, assessRes, billRes] = await Promise.all([
             fetch(`${baseUrl}/scan-prescription/by-patient/${id}`)
               .then((r) => r.json())
               .catch(() => ({ data: [] })),
@@ -115,6 +116,9 @@ const PatientDashboardOverview = () => {
               .then((r) => r.json())
               .catch(() => ({ data: [] })),
             fetch(`${baseUrl}/assessment/get-by-phn/${id}`)
+              .then((r) => r.json())
+              .catch(() => ({ data: [] })),
+            fetch(`${baseUrl}/treatment-bill/get-patient-phnid/${id}`)
               .then((r) => r.json())
               .catch(() => ({ data: [] })),
           ]);
@@ -143,16 +147,26 @@ const PatientDashboardOverview = () => {
             _clinicName: clinic_name,
             _subdomain: subdomain,
           }));
+          const bills = (billRes?.data || []).map((r) => ({
+            ...r,
+            _type: "bill",
+            _clinicName: clinic_name,
+            _subdomain: subdomain,
+          }));
 
-          return { scans, labs, prescriptions, assessments };
+          return { scans, labs, prescriptions, assessments, bills };
         },
       );
 
       const results = await Promise.all(clinicPromises);
       let merged = [];
       let allVitals = [];
+      let allBills = [];
       results.forEach((res) => {
         merged.push(...res.scans, ...res.labs, ...res.prescriptions);
+        if (res.bills && Array.isArray(res.bills)) {
+          allBills.push(...res.bills);
+        }
         if (res.assessments && Array.isArray(res.assessments)) {
           res.assessments.forEach((a) => {
             if (a.vitals && Array.isArray(a.vitals)) {
@@ -172,6 +186,9 @@ const PatientDashboardOverview = () => {
         .slice(0, 5);
 
       setPrescriptions(unique);
+      
+      const sortedBills = allBills.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 5);
+      setBills(sortedBills);
 
       allVitals.sort((a, b) => new Date(a.date) - new Date(b.date));
       setVitalsHistory(allVitals);
@@ -179,6 +196,98 @@ const PatientDashboardOverview = () => {
       console.error("Prescriptions fetch error", error);
     }
   }, [id, clinicIdResolvedData]);
+
+  const handlePrintBill = (bill) => {
+    const printContent = `
+      <div style="font-family: sans-serif; padding: 20px; max-width: 800px; margin: 0 auto;">
+        <div style="border-bottom: 1px solid #eee; padding-bottom: 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-start;">
+          <div>
+            <h2 style="margin: 0 0 10px 0; color: #333;">Bill Details</h2>
+            <p style="margin: 0; color: #666;">Bill ID: <strong style="color: #333;">#${bill._id?.slice(-8).toUpperCase() || bill.treatmentBillId}</strong></p>
+          </div>
+          <div style="padding: 5px 15px; border-radius: 20px; font-weight: bold; font-size: 14px; ${Number(bill.balanceAmount) > 0 ? 'background-color: #fef3c7; color: #b45309;' : 'background-color: #d1fae5; color: #047857;'}">
+            ${Number(bill.balanceAmount) > 0 ? "Pending" : "Fully Paid"}
+          </div>
+        </div>
+        
+        <table style="width: 100%; text-align: left; border-collapse: collapse; margin-bottom: 30px; background-color: #f9fafb; border-radius: 8px; overflow: hidden;">
+          <thead>
+            <tr>
+              <th style="padding: 12px; border-bottom: 1px solid #eee; color: #6b7280; font-size: 12px; text-transform: uppercase;">Patient Name</th>
+              <th style="padding: 12px; border-bottom: 1px solid #eee; color: #6b7280; font-size: 12px; text-transform: uppercase;">Phone</th>
+              <th style="padding: 12px; border-bottom: 1px solid #eee; color: #6b7280; font-size: 12px; text-transform: uppercase;">Invoice Date</th>
+              <th style="padding: 12px; border-bottom: 1px solid #eee; color: #6b7280; font-size: 12px; text-transform: uppercase;">Payment Mode</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding: 12px; font-weight: bold; color: #374151;">${bill.patientName || "N/A"}</td>
+              <td style="padding: 12px; font-weight: bold; color: #374151;">${bill.patientPhone || "N/A"}</td>
+              <td style="padding: 12px; font-weight: bold; color: #374151;">${bill.invoiceDate ? new Date(bill.invoiceDate).toLocaleDateString() : "N/A"}</td>
+              <td style="padding: 12px; font-weight: bold; color: #374151;">${bill.modeOfPayment || "N/A"}</td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <h3 style="color: #374151; margin-bottom: 15px;">Treatments / Products</h3>
+        <table style="width: 100%; text-align: left; border-collapse: collapse; margin-bottom: 30px; border: 1px solid #eee;">
+          <thead>
+            <tr style="background-color: #f9fafb;">
+              <th style="padding: 12px; border-bottom: 1px solid #eee; color: #374151;">Item</th>
+              <th style="padding: 12px; border-bottom: 1px solid #eee; color: #374151; text-align: right;">Price</th>
+              <th style="padding: 12px; border-bottom: 1px solid #eee; color: #374151; text-align: center;">Qty</th>
+              <th style="padding: 12px; border-bottom: 1px solid #eee; color: #374151; text-align: right;">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${bill.treatments && bill.treatments.length > 0 ? bill.treatments.map(t => `
+              <tr>
+                <td style="padding: 12px; border-bottom: 1px solid #eee; color: #4b5563;">${t.name}</td>
+                <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: right; color: #4b5563;">₹${t.price}</td>
+                <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: center; color: #4b5563;">${t.quantity}</td>
+                <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: #374151;">₹${t.total}</td>
+              </tr>
+            `).join('') : `<tr><td colspan="4" style="text-align: center; padding: 20px; color: #9ca3af;">No treatments or products added to this bill.</td></tr>`}
+          </tbody>
+        </table>
+
+        <div style="text-align: right; width: 300px; margin-left: auto;">
+           <div style="display: flex; justify-content: space-between; margin-bottom: 8px; color: #6b7280;">
+             <span>Subtotal</span>
+             <strong style="color: #374151;">₹${bill.totalAmount || bill.grandTotal || 0}</strong>
+           </div>
+           ${bill.discount > 0 ? `
+           <div style="display: flex; justify-content: space-between; margin-bottom: 8px; color: #6b7280;">
+             <span>Discount (${bill.discount}%)</span>
+             <strong style="color: #ef4444;">- ₹${((bill.totalAmount * bill.discount) / 100).toFixed(2)}</strong>
+           </div>` : ''}
+           <div style="display: flex; justify-content: space-between; margin-bottom: 15px; color: #6b7280; border-bottom: 1px solid #eee; padding-bottom: 15px;">
+             <span>Paid Amount</span>
+             <strong style="color: #10b981;">₹${bill.paidAmount || bill.amountReceived || (Number(bill.grandTotal || 0) - Number(bill.balanceAmount || 0))}</strong>
+           </div>
+           <div style="display: flex; justify-content: space-between; font-size: 18px; font-weight: bold; background-color: #f9fafb; padding: 15px; border-radius: 8px; border: 1px solid #eee;">
+             <span style="color: #374151;">Balance Due</span>
+             <span style="${Number(bill.balanceAmount) > 0 ? 'color: #ef4444;' : 'color: #10b981;'}">₹${bill.balanceAmount || 0}</span>
+           </div>
+        </div>
+      </div>
+    `;
+
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Print Bill - ${bill.treatmentBillId || "Receipt"}</title>
+          </head>
+          <body onload="window.print(); window.close();">
+            ${printContent}
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+    }
+  };
 
   useEffect(() => {
     const fetchAppointments = async () => {
@@ -688,53 +797,82 @@ const PatientDashboardOverview = () => {
       </div>
 
       {/* Bottom Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mt-2">
-        {/* Glucose Chart */}
-        <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6 flex flex-col gap-4">
-          <div className="flex justify-between items-center">
-            <h4 className="text-slate-600 font-bold text-sm">
-              Glucose (Recent)
-            </h4>
-            <Icon
-              icon="solar:alt-arrow-down-linear"
-              className="text-slate-400"
-            />
+      <div className="flex flex-row gap-6 mt-2 w-full">
+        {/* Bills & Invoices Table */}
+        <div className="bg-white w-full rounded-xl shadow-sm border border-slate-100 p-6 flex flex-col gap-4">
+          <div className="flex justify-between items-center mb-2">
+            <h4 className="text-slate-600 font-bold text-sm">Bills & Invoices</h4>
+            <span
+              className="text-blue-500 font-bold text-xs cursor-pointer"
+              onClick={() => navigate("/dashboard/bills")}
+            >
+              More
+            </span>
           </div>
-          <div className="flex-1 min-h-[200px] w-full flex items-center justify-center">
-            {recentGlucoseVitals.length > 0 ? (
-              <Line data={glucoseData} options={glucoseOptions} />
-            ) : (
-              <span className="text-slate-400 text-xs font-bold uppercase tracking-widest">
-                No API Data
+          {bills.length > 0 ? (
+            <div className="overflow-x-auto overflow-y-auto max-h-[250px] custom-scrollbar">
+              <table className="w-full text-left border-collapse relative">
+                <thead className="sticky top-0 bg-white z-10">
+                  <tr className="border-b border-slate-100 text-[10px] uppercase tracking-wider text-slate-400">
+                    <th className="pb-2 font-bold">Date</th>
+                    <th className="pb-2 font-bold">Bill ID</th>
+                    <th className="pb-2 font-bold text-right">Total</th>
+                    <th className="pb-2 font-bold text-right">Balance</th>
+                    <th className="pb-2 font-bold text-center">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {bills.map((bill, i) => (
+                    <tr
+                      key={i}
+                      className="border-b border-slate-50 last:border-0 hover:bg-slate-50 transition-colors"
+                    >
+                      <td className="py-3 pr-4 text-xs text-slate-500 font-medium whitespace-nowrap">
+                        {dayjs(bill.createdAt).format("DD MMM YYYY")}
+                      </td>
+                      <td className="py-3 pr-4 text-sm font-bold text-slate-700">
+                        {bill.treatmentBillId || "Bill"}
+                      </td>
+                      <td className="py-3 pr-4 text-sm font-black text-slate-700 text-right whitespace-nowrap">
+                        ₹{bill.totalAmount || bill.grandTotal || 0}
+                      </td>
+                      <td className="py-3 pr-4 text-sm font-black text-slate-700 text-right whitespace-nowrap">
+                        ₹{bill.balanceAmount || 0}
+                      </td>
+                      <td className="py-3 px-2 text-center">
+                        <div className="flex items-center justify-center gap-2">
+                          <button
+                            onClick={() => setSelectedRecordDetails(bill)}
+                            className="w-8 h-8 rounded-full border border-slate-200 inline-flex items-center justify-center text-blue-500 hover:bg-blue-50 hover:border-blue-200 transition-colors"
+                            title="View Bill"
+                          >
+                            <Icon icon="solar:eye-bold-duotone" width="16" />
+                          </button>
+                          <button
+                            onClick={() => handlePrintBill(bill)}
+                            className="w-8 h-8 rounded-full border border-slate-200 inline-flex items-center justify-center text-blue-500 hover:bg-blue-50 hover:border-blue-200 transition-colors"
+                            title="Download/Print Bill"
+                          >
+                            <Icon icon="solar:download-minimalistic-bold-duotone" width="16" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center h-full">
+              <span className="text-slate-400 text-xs font-bold uppercase tracking-widest py-8">
+                No Bills Found
               </span>
-            )}
-          </div>
-        </div>
-
-        {/* Blood Pressure Chart */}
-        <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6 flex flex-col gap-4">
-          <div className="flex justify-between items-center">
-            <h4 className="text-slate-600 font-bold text-sm">
-              Blood Pressure
-            </h4>
-            <Icon
-              icon="solar:heart-pulse-bold-duotone"
-              className="text-red-400"
-            />
-          </div>
-          <div className="flex-1 min-h-[200px] w-full flex items-center justify-center">
-            {recentBpVitals.length > 0 ? (
-              <Line data={bpData} options={bpOptions} />
-            ) : (
-              <span className="text-slate-400 text-xs font-bold uppercase tracking-widest">
-                No API Data
-              </span>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
         {/* Test Results */}
-        <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6 flex flex-col gap-4">
+        <div className="bg-white w-full rounded-xl shadow-sm border border-slate-100 p-6 flex flex-col gap-4">
           <div className="flex justify-between items-center mb-2">
             <h4 className="text-slate-600 font-bold text-sm">Blood test results</h4>
             <span
@@ -829,7 +967,7 @@ const PatientDashboardOverview = () => {
         </div>
 
         {/* Current Medicines */}
-        <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6 flex flex-col gap-4">
+        <div className="bg-white w-full rounded-xl shadow-sm border border-slate-100 p-6 flex flex-col gap-4">
           <div className="flex justify-between items-center mb-2">
             <h4 className="text-slate-600 font-bold text-sm">
               Current Prescriptions
@@ -889,6 +1027,53 @@ const PatientDashboardOverview = () => {
               </span>
             </div>
           )}
+        </div>
+      </div>
+      
+      {/* Vitals Charts Section */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+        {/* Glucose Chart */}
+        <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6 flex flex-col gap-4">
+          <div className="flex justify-between items-center">
+            <h4 className="text-slate-600 font-bold text-sm">
+              Glucose (Recent)
+            </h4>
+            <Icon
+              icon="solar:alt-arrow-down-linear"
+              className="text-slate-400"
+            />
+          </div>
+          <div className="flex-1 min-h-[200px] w-full flex items-center justify-center">
+            {recentGlucoseVitals.length > 0 ? (
+              <Line data={glucoseData} options={glucoseOptions} />
+            ) : (
+              <span className="text-slate-400 text-xs font-bold uppercase tracking-widest">
+                No API Data
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Blood Pressure Chart */}
+        <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6 flex flex-col gap-4">
+          <div className="flex justify-between items-center">
+            <h4 className="text-slate-600 font-bold text-sm">
+              Blood Pressure
+            </h4>
+            <Icon
+              icon="solar:heart-pulse-bold-duotone"
+              className="text-red-400"
+            />
+          </div>
+          <div className="flex-1 min-h-[200px] w-full flex items-center justify-center">
+            {recentBpVitals.length > 0 ? (
+              <Line data={bpData} options={bpOptions} />
+            ) : (
+              <span className="text-slate-400 text-xs font-bold uppercase tracking-widest">
+                No API Data
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
@@ -1117,13 +1302,14 @@ const PatientDashboardOverview = () => {
              {/* Header */}
              <div className="flex justify-between items-center p-6 border-b border-slate-100 bg-slate-50/50">
                 <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${selectedRecordDetails._type === 'prescription' ? 'bg-blue-100 text-blue-600' : selectedRecordDetails._type === 'lab' ? 'bg-rose-100 text-rose-600' : 'bg-purple-100 text-purple-600'}`}>
-                    <Icon icon={selectedRecordDetails._type === 'prescription' ? 'solar:document-medicine-bold-duotone' : selectedRecordDetails._type === 'lab' ? 'solar:test-tube-bold-duotone' : 'solar:scanner-bold-duotone'} width={24} />
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${selectedRecordDetails._type === 'prescription' ? 'bg-blue-100 text-blue-600' : selectedRecordDetails._type === 'lab' ? 'bg-rose-100 text-rose-600' : selectedRecordDetails._type === 'bill' ? 'bg-orange-100 text-orange-600' : 'bg-purple-100 text-purple-600'}`}>
+                    <Icon icon={selectedRecordDetails._type === 'prescription' ? 'solar:document-medicine-bold-duotone' : selectedRecordDetails._type === 'lab' ? 'solar:test-tube-bold-duotone' : selectedRecordDetails._type === 'bill' ? 'solar:bill-list-bold-duotone' : 'solar:scanner-bold-duotone'} width={24} />
                   </div>
                   <div>
                     <h2 className="text-xl font-black text-slate-800">
                       {selectedRecordDetails._type === 'prescription' ? 'Prescription Details' : 
-                       selectedRecordDetails._type === 'lab' ? 'Lab Report Details' : 'Scan Report Details'}
+                       selectedRecordDetails._type === 'lab' ? 'Lab Report Details' : 
+                       selectedRecordDetails._type === 'bill' ? 'Bill Details' : 'Scan Report Details'}
                     </h2>
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{dayjs(selectedRecordDetails.createdAt).format("DD MMM YYYY, hh:mm A")}</span>
                   </div>
@@ -1158,6 +1344,45 @@ const PatientDashboardOverview = () => {
                           </div>
                         </div>
                       ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Treatments if bill */}
+                {selectedRecordDetails._type === 'bill' && selectedRecordDetails.treatments?.length > 0 && (
+                  <div>
+                    <h3 className="text-sm font-black uppercase tracking-wider text-slate-800 mb-4 flex items-center gap-2">
+                      <Icon icon="solar:bill-list-bold-duotone" className="text-orange-500" width={18} />
+                      Bill Treatments
+                    </h3>
+                    <div className="flex flex-col gap-4">
+                      {selectedRecordDetails.treatments.map((t, i) => (
+                        <div key={i} className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex flex-col gap-2 hover:shadow-md transition-shadow">
+                          <div className="flex justify-between items-center">
+                            <span className="font-bold text-slate-800 text-base">{t.name}</span>
+                            <span className="font-bold text-slate-800">₹{t.total}</span>
+                          </div>
+                          <div className="flex flex-wrap gap-2 text-[10px]">
+                            {t.category && <span className="bg-white px-2.5 py-1.5 rounded-lg border border-slate-200 font-bold text-slate-600 shadow-sm">{t.category}</span>}
+                            <span className="bg-white px-2.5 py-1.5 rounded-lg border border-slate-200 font-bold text-slate-600 shadow-sm">Qty: {t.quantity}</span>
+                            <span className="bg-white px-2.5 py-1.5 rounded-lg border border-slate-200 font-bold text-slate-600 shadow-sm">Price: ₹{t.price}</span>
+                          </div>
+                        </div>
+                      ))}
+                      <div className="mt-4 flex flex-col gap-2 p-4 bg-orange-50 rounded-2xl border border-orange-100">
+                        <div className="flex justify-between text-sm font-bold text-slate-700">
+                           <span>Total Amount:</span>
+                           <span>₹{selectedRecordDetails.totalAmount || selectedRecordDetails.grandTotal}</span>
+                        </div>
+                        <div className="flex justify-between text-sm font-bold text-slate-700">
+                           <span>Paid Amount:</span>
+                           <span>₹{selectedRecordDetails.paidAmount || selectedRecordDetails.amountReceived || (Number(selectedRecordDetails.grandTotal || 0) - Number(selectedRecordDetails.balanceAmount || 0))}</span>
+                        </div>
+                        <div className="flex justify-between text-sm font-bold text-orange-600">
+                           <span>Balance Amount:</span>
+                           <span>₹{selectedRecordDetails.balanceAmount || 0}</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -1208,12 +1433,20 @@ const PatientDashboardOverview = () => {
                   );
                 })()}
                 
-                {/* If no meds and no doc */}
-                {(!selectedRecordDetails.medicinesData || selectedRecordDetails.medicinesData.length === 0) && !selectedRecordDetails.finalReportFileUrl && !selectedRecordDetails.finalReportFileUrls && !selectedRecordDetails.fileUrl && !selectedRecordDetails.documentPath && (
+                {/* If no meds, no doc, and no treatments */}
+                {selectedRecordDetails._type !== 'bill' && (!selectedRecordDetails.medicinesData || selectedRecordDetails.medicinesData.length === 0) && !selectedRecordDetails.finalReportFileUrl && !selectedRecordDetails.finalReportFileUrls && !selectedRecordDetails.fileUrl && !selectedRecordDetails.documentPath && (
                    <div className="flex flex-col items-center justify-center py-16 text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200 mt-4">
                      <Icon icon="solar:ghost-smile-bold-duotone" className="text-6xl mb-4 opacity-40" />
                      <span className="font-bold text-sm tracking-widest uppercase text-slate-500">No Data Available</span>
-                     <span className="text-xs text-slate-400 mt-2 font-medium max-w-[250px] text-center">There are no medicines or documents attached to this record.</span>
+                     <span className="text-xs text-slate-400 mt-2 font-medium max-w-[250px] text-center">There is no data attached to this record.</span>
+                   </div>
+                )}
+                
+                {selectedRecordDetails._type === 'bill' && (!selectedRecordDetails.treatments || selectedRecordDetails.treatments.length === 0) && (
+                   <div className="flex flex-col items-center justify-center py-16 text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200 mt-4">
+                     <Icon icon="solar:ghost-smile-bold-duotone" className="text-6xl mb-4 opacity-40" />
+                     <span className="font-bold text-sm tracking-widest uppercase text-slate-500">No Treatments</span>
+                     <span className="text-xs text-slate-400 mt-2 font-medium max-w-[250px] text-center">There are no treatments found for this bill.</span>
                    </div>
                 )}
              </div>
