@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Icon } from "@iconify/react";
-import { AxiosInstanceSecondryServer, AxiosInstanceDependency } from "../utilities/AxiosInstance";
+import {
+  AxiosInstanceSecondryServer,
+  AxiosInstanceDependency,
+} from "../utilities/AxiosInstance";
 import dayjs from "dayjs";
 import doctorsData from "../data/doctorsData.json";
 import AIGaugeReport from "../components/AIGaugeReport";
@@ -76,7 +79,9 @@ const PatientDashboardOverview = () => {
         resolvedMap.set(clinic.cid, {
           cid: clinic.cid,
           clinic_name: clinic.clinic_name,
-          subdomain: clinic.subdomain_name || clinic.clinic_name.toLowerCase().replace(/\s+/g, "-"),
+          subdomain:
+            clinic.subdomain_name ||
+            clinic.clinic_name.toLowerCase().replace(/\s+/g, "-"),
           address: clinic.address || "",
           phone: clinic.phone || "",
         });
@@ -105,23 +110,24 @@ const PatientDashboardOverview = () => {
                 ? "http://localhost:4026"
                 : "http://localhost:3026";
           }
-          const [scanRes, labRes, rxRes, assessRes, billRes] = await Promise.all([
-            fetch(`${baseUrl}/scan-prescription/by-patient/${id}`)
-              .then((r) => r.json())
-              .catch(() => ({ data: [] })),
-            fetch(`${baseUrl}/lab-prescription/by-patient/${id}`)
-              .then((r) => r.json())
-              .catch(() => ({ data: [] })),
-            fetch(`${baseUrl}/prescription/get-by-phn/${id}`)
-              .then((r) => r.json())
-              .catch(() => ({ data: [] })),
-            fetch(`${baseUrl}/assessment/get-by-phn/${id}`)
-              .then((r) => r.json())
-              .catch(() => ({ data: [] })),
-            fetch(`${baseUrl}/treatment-bill/get-patient-phnid/${id}`)
-              .then((r) => r.json())
-              .catch(() => ({ data: [] })),
-          ]);
+          const [scanRes, labRes, rxRes, assessRes, billRes] =
+            await Promise.all([
+              fetch(`${baseUrl}/scan-prescription/by-patient/${id}`)
+                .then((r) => r.json())
+                .catch(() => ({ data: [] })),
+              fetch(`${baseUrl}/lab-prescription/by-patient/${id}`)
+                .then((r) => r.json())
+                .catch(() => ({ data: [] })),
+              fetch(`${baseUrl}/prescription/get-by-phn/${id}`)
+                .then((r) => r.json())
+                .catch(() => ({ data: [] })),
+              fetch(`${baseUrl}/assessment/get-by-phn/${id}`)
+                .then((r) => r.json())
+                .catch(() => ({ data: [] })),
+              fetch(`${baseUrl}/treatment-bill/get-patient-phnid/${id}`)
+                .then((r) => r.json())
+                .catch(() => ({ data: [] })),
+            ]);
           const scans = (scanRes?.data || []).map((r) => ({
             ...r,
             _type: "scan",
@@ -186,8 +192,10 @@ const PatientDashboardOverview = () => {
         .slice(0, 5);
 
       setPrescriptions(unique);
-      
-      const sortedBills = allBills.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 5);
+
+      const sortedBills = allBills
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .slice(0, 5);
       setBills(sortedBills);
 
       allVitals.sort((a, b) => new Date(a.date) - new Date(b.date));
@@ -205,7 +213,7 @@ const PatientDashboardOverview = () => {
             <h2 style="margin: 0 0 10px 0; color: #333;">Bill Details</h2>
             <p style="margin: 0; color: #666;">Bill ID: <strong style="color: #333;">#${bill._id?.slice(-8).toUpperCase() || bill.treatmentBillId}</strong></p>
           </div>
-          <div style="padding: 5px 15px; border-radius: 20px; font-weight: bold; font-size: 14px; ${Number(bill.balanceAmount) > 0 ? 'background-color: #fef3c7; color: #b45309;' : 'background-color: #d1fae5; color: #047857;'}">
+          <div style="padding: 5px 15px; border-radius: 20px; font-weight: bold; font-size: 14px; ${Number(bill.balanceAmount) > 0 ? "background-color: #fef3c7; color: #b45309;" : "background-color: #d1fae5; color: #047857;"}">
             ${Number(bill.balanceAmount) > 0 ? "Pending" : "Fully Paid"}
           </div>
         </div>
@@ -240,14 +248,22 @@ const PatientDashboardOverview = () => {
             </tr>
           </thead>
           <tbody>
-            ${bill.treatments && bill.treatments.length > 0 ? bill.treatments.map(t => `
+            ${
+              bill.treatments && bill.treatments.length > 0
+                ? bill.treatments
+                    .map(
+                      (t) => `
               <tr>
                 <td style="padding: 12px; border-bottom: 1px solid #eee; color: #4b5563;">${t.name}</td>
                 <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: right; color: #4b5563;">₹${t.price}</td>
                 <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: center; color: #4b5563;">${t.quantity}</td>
                 <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: #374151;">₹${t.total}</td>
               </tr>
-            `).join('') : `<tr><td colspan="4" style="text-align: center; padding: 20px; color: #9ca3af;">No treatments or products added to this bill.</td></tr>`}
+            `,
+                    )
+                    .join("")
+                : `<tr><td colspan="4" style="text-align: center; padding: 20px; color: #9ca3af;">No treatments or products added to this bill.</td></tr>`
+            }
           </tbody>
         </table>
 
@@ -256,24 +272,28 @@ const PatientDashboardOverview = () => {
              <span>Subtotal</span>
              <strong style="color: #374151;">₹${bill.totalAmount || bill.grandTotal || 0}</strong>
            </div>
-           ${bill.discount > 0 ? `
+           ${
+             bill.discount > 0
+               ? `
            <div style="display: flex; justify-content: space-between; margin-bottom: 8px; color: #6b7280;">
              <span>Discount (${bill.discount}%)</span>
              <strong style="color: #ef4444;">- ₹${((bill.totalAmount * bill.discount) / 100).toFixed(2)}</strong>
-           </div>` : ''}
+           </div>`
+               : ""
+           }
            <div style="display: flex; justify-content: space-between; margin-bottom: 15px; color: #6b7280; border-bottom: 1px solid #eee; padding-bottom: 15px;">
              <span>Paid Amount</span>
-             <strong style="color: #10b981;">₹${bill.paidAmount || bill.amountReceived || (Number(bill.grandTotal || 0) - Number(bill.balanceAmount || 0))}</strong>
+             <strong style="color: #10b981;">₹${bill.paidAmount || bill.amountReceived || Number(bill.grandTotal || 0) - Number(bill.balanceAmount || 0)}</strong>
            </div>
            <div style="display: flex; justify-content: space-between; font-size: 18px; font-weight: bold; background-color: #f9fafb; padding: 15px; border-radius: 8px; border: 1px solid #eee;">
              <span style="color: #374151;">Balance Due</span>
-             <span style="${Number(bill.balanceAmount) > 0 ? 'color: #ef4444;' : 'color: #10b981;'}">₹${bill.balanceAmount || 0}</span>
+             <span style="${Number(bill.balanceAmount) > 0 ? "color: #ef4444;" : "color: #10b981;"}">₹${bill.balanceAmount || 0}</span>
            </div>
         </div>
       </div>
     `;
 
-    const printWindow = window.open('', '_blank');
+    const printWindow = window.open("", "_blank");
     if (printWindow) {
       printWindow.document.write(`
         <html>
@@ -311,7 +331,9 @@ const PatientDashboardOverview = () => {
     const fetchVideoMeetings = async () => {
       try {
         if (!userData?.id) return;
-        const res = await AxiosInstanceDependency.get(`video-meetings?patientId=${userData.id}`);
+        const res = await AxiosInstanceDependency.get(
+          `video-meetings?patientId=${userData.id}`,
+        );
         if (res.data && res.data.success) {
           setVideoAppointments(res.data.data);
         }
@@ -342,9 +364,10 @@ const PatientDashboardOverview = () => {
     .sort((a, b) => new Date(a.appointmentDate) - new Date(b.appointmentDate));
 
   const upcomingClinicAppointment = futureAppointments.find(
-    (app) => !(app.appointmentMode === "Online" || app.videoConsult || app.isOnline)
+    (app) =>
+      !(app.appointmentMode === "Online" || app.videoConsult || app.isOnline),
   );
-  
+
   // Future video appointments from the dedicated video meetings collection
   const futureVideoAppointments = videoAppointments
     .filter((app) => {
@@ -359,14 +382,18 @@ const PatientDashboardOverview = () => {
       docName: app.doctorName,
       // time in video meeting is like "08:00 AM", so we can combine it with date for dayjs parsing in UI if needed
     }))
-    .sort((a, b) => new Date(`${a.date} ${a.time}`) - new Date(`${b.date} ${b.time}`));
-    
+    .sort(
+      (a, b) =>
+        new Date(`${a.date} ${a.time}`) - new Date(`${b.date} ${b.time}`),
+    );
+
   let upcomingVideoAppointment = futureVideoAppointments[0];
-  
+
   if (!upcomingVideoAppointment) {
     // fallback to old schema appointments
     upcomingVideoAppointment = futureAppointments.find(
-      (app) => (app.appointmentMode === "Online" || app.videoConsult || app.isOnline)
+      (app) =>
+        app.appointmentMode === "Online" || app.videoConsult || app.isOnline,
     );
   }
 
@@ -416,11 +443,19 @@ const PatientDashboardOverview = () => {
     .slice(-5);
 
   const bpData = {
-    labels: recentBpVitals.length > 0 ? recentBpVitals.map((v) => dayjs(v.date).format("DD/MM")) : [],
+    labels:
+      recentBpVitals.length > 0
+        ? recentBpVitals.map((v) => dayjs(v.date).format("DD/MM"))
+        : [],
     datasets: [
       {
         label: "Systolic",
-        data: recentBpVitals.length > 0 ? recentBpVitals.map((v) => parseInt(v.bloodPressure.split("/")[0]) || 0) : [],
+        data:
+          recentBpVitals.length > 0
+            ? recentBpVitals.map(
+                (v) => parseInt(v.bloodPressure.split("/")[0]) || 0,
+              )
+            : [],
         borderColor: "#ef4444",
         backgroundColor: "rgba(239, 68, 68, 0.1)",
         fill: true,
@@ -429,27 +464,42 @@ const PatientDashboardOverview = () => {
       },
       {
         label: "Diastolic",
-        data: recentBpVitals.length > 0 ? recentBpVitals.map((v) => parseInt(v.bloodPressure.split("/")[1]) || 0) : [],
+        data:
+          recentBpVitals.length > 0
+            ? recentBpVitals.map(
+                (v) => parseInt(v.bloodPressure.split("/")[1]) || 0,
+              )
+            : [],
         borderColor: "#3b82f6",
         backgroundColor: "rgba(59, 130, 246, 0.1)",
         fill: true,
         tension: 0.4,
         pointBackgroundColor: "#3b82f6",
-      }
+      },
     ],
   };
 
   const bpOptions = {
     responsive: true,
     maintainAspectRatio: false,
-    plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } },
+    plugins: {
+      legend: {
+        display: true,
+        position: "bottom",
+        labels: { boxWidth: 10, font: { size: 10 } },
+      },
+    },
     scales: {
       y: {
         beginAtZero: false,
         border: { display: false },
-        ticks: { font: { size: 10 } }
+        ticks: { font: { size: 10 } },
       },
-      x: { grid: { display: false }, border: { display: false }, ticks: { font: { size: 10 } } },
+      x: {
+        grid: { display: false },
+        border: { display: false },
+        ticks: { font: { size: 10 } },
+      },
     },
   };
 
@@ -472,7 +522,7 @@ const PatientDashboardOverview = () => {
       .sort(
         (a, b) =>
           new Date(b.createdAt || b.updatedAt || new Date()) -
-          new Date(a.createdAt || a.updatedAt || new Date())
+          new Date(a.createdAt || a.updatedAt || new Date()),
       );
 
     const latestActive = rxList.find((p) => {
@@ -490,14 +540,15 @@ const PatientDashboardOverview = () => {
     }
     return meds;
   })();
-  const testResults = prescriptions
-    .filter((p) => p._type === "lab" || p._type === "scan")
+  const labResults = prescriptions.filter((p) => p._type === "lab").slice(0, 3);
+  const scanResults = prescriptions
+    .filter((p) => p._type === "scan")
     .slice(0, 3);
 
   return (
     <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-4 duration-700 min-h-full">
       {/* Top Welcome Card */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl p-8 text-white shadow-lg relative overflow-hidden">
+      <div className="bg-linear-to-r from-blue-500 to-teal-400 rounded-xl p-8 text-white shadow-lg relative overflow-hidden">
         <div className="absolute top-0 right-0 p-8 opacity-10">
           <Icon icon="solar:health-bold" className="w-48 h-48" />
         </div>
@@ -513,77 +564,215 @@ const PatientDashboardOverview = () => {
             Welcome to your health command center. Here you can track your
             appointments, chat with doctors, and view your digital records.
           </p>
-          <div className="flex gap-4">
-            <button
-              onClick={() => navigate("/")}
-              className="bg-white text-blue-600 px-6 py-2 rounded-lg font-bold text-sm hover:bg-blue-50 transition-colors shadow-sm"
-            >
-              BOOK APPOINTMENT
-            </button>
-            <button
-              onClick={() => navigate("/dashboard/medical-records")}
-              className="bg-white/20 hover:bg-white/30 text-white px-6 py-2 rounded-lg font-bold text-sm backdrop-blur-sm transition-colors border border-white/30"
-            >
-              VIEW RECORDS
-            </button>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mt-6">
+            {[
+              {
+                label: "Book an Appointment",
+                icon: "solar:calendar-add-bold-duotone",
+                route: "/",
+              },
+              {
+                label: "Upcoming Appointments",
+                icon: "solar:calendar-date-bold-duotone",
+                route: "/dashboard/appointments",
+              },
+              {
+                label: "Video Chat",
+                icon: "solar:videocamera-bold-duotone",
+                route: "/dashboard/video-consult",
+              },
+              {
+                label: "Prescriptions & Pharmacy",
+                icon: "solar:document-medicine-bold-duotone",
+                route: "/dashboard/prescriptions",
+              },
+              {
+                label: "Blood test reports",
+                icon: "solar:test-tube-bold-duotone",
+                route: "/dashboard/lab-tests",
+              },
+              {
+                label: "Scan reports",
+                icon: "solar:scanner-bold-duotone",
+                route: "/dashboard/scans",
+              },
+              {
+                label: "Last visited clinics",
+                icon: "solar:hospital-bold-duotone",
+                route: "/dashboard/attend-clinics",
+              },
+              {
+                label: "Clinics customer care",
+                icon: "bi:headset",
+                route: "/dashboard/clinic-support-chat",
+              },
+              {
+                label: "Post care & After discharge",
+                icon: "solar:heart-pulse-bold-duotone",
+                route: "/dashboard/post-care",
+              },
+              {
+                label: "Bills & Invoice",
+                icon: "solar:bill-list-bold-duotone",
+                route: "/dashboard/bills",
+              },
+            ].map((btn, i) => (
+              <button
+                key={i}
+                onClick={() => navigate(btn.route)}
+                className={`bg-white text-blue-600 hover:bg-blue-50 border-white px-3 py-2.5 rounded-lg font-semibold text-xs backdrop-blur-sm transition-colors border flex flex-col items-center justify-center gap-1.5 shadow-sm text-center h-full`}
+              >
+                <Icon icon={btn.icon} width="20" />
+                <span className="leading-tight">{btn.label}</span>
+              </button>
+            ))}
           </div>
         </div>
       </div>
 
       {/* Second Row: BP, Sugar, and Appointments */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* Blood Pressure Card */}
-        <div className="rounded-xl p-6 text-white bg-linear-to-r from-blue-500 to-teal-400 shadow-sm relative overflow-hidden flex flex-col justify-center">
-          <div className="relative z-10 flex flex-col items-start gap-1">
-            <span className="text-sm font-bold opacity-90">Blood Pressure</span>
-            <span className="text-5xl font-black">
-              {latestVitals?.bloodPressure || "--/--"}
-            </span>
+      <div className="flex flex-col gap-6">
+        <div className="flex flex-row gap-6 w-full">
+          {/* Blood Pressure Card */}
+          <div className="min-w-96 rounded-xl p-6 text-white bg-linear-to-r from-blue-500 to-teal-400 shadow-sm relative overflow-hidden flex flex-col justify-center">
+            <div className="relative z-10 flex flex-col items-start gap-1">
+              <span className="text-sm font-bold opacity-90">
+                Blood Pressure
+              </span>
+              <span className="text-5xl font-black">
+                {latestVitals?.bloodPressure || "--/--"}
+              </span>
+            </div>
+            <div className="absolute bottom-0 left-0 right-0 h-16 opacity-30">
+              <svg
+                viewBox="0 0 500 150"
+                preserveAspectRatio="none"
+                className="h-full w-full"
+              >
+                <path
+                  d="M0.00,49.98 C150.00,150.00 349.20,-50.00 500.00,49.98 L500.00,150.00 L0.00,150.00 Z"
+                  fill="currentColor"
+                ></path>
+              </svg>
+            </div>
           </div>
-          <div className="absolute bottom-0 left-0 right-0 h-16 opacity-30">
-            <svg viewBox="0 0 500 150" preserveAspectRatio="none" className="h-full w-full">
-              <path d="M0.00,49.98 C150.00,150.00 349.20,-50.00 500.00,49.98 L500.00,150.00 L0.00,150.00 Z" fill="currentColor"></path>
-            </svg>
+
+          {/* Blood Pressure Chart */}
+          <div className="w-full bg-white rounded-xl shadow-sm border border-slate-100 p-6 flex flex-col gap-4">
+            <div className="flex justify-between items-center">
+              <h4 className="text-slate-600 font-bold text-sm">
+                Blood Pressure
+              </h4>
+              <Icon
+                icon="solar:heart-pulse-bold-duotone"
+                className="text-red-400"
+              />
+            </div>
+            <div className="flex-1 min-h-[200px] w-full flex items-center justify-center">
+              {recentBpVitals.length > 0 ? (
+                <Line data={bpData} options={bpOptions} />
+              ) : (
+                <span className="text-slate-400 text-xs font-bold uppercase tracking-widest">
+                  No API Data
+                </span>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Glucose Level Card */}
-        <div className="rounded-xl p-6 text-white bg-linear-to-r from-orange-400 to-amber-400 shadow-sm relative overflow-hidden flex flex-col justify-center">
-          <div className="relative z-10 flex flex-col items-start gap-1">
-            <span className="text-sm font-bold opacity-90">Glucose Level</span>
-            <span className="text-5xl font-black">
-              {recentGlucoseVitals.length > 0 
-                ? (recentGlucoseVitals[recentGlucoseVitals.length - 1].bloodSugarFasting || recentGlucoseVitals[recentGlucoseVitals.length - 1].bloodSugarAfterFood)
-                : "--"
-              } <span className="text-2xl font-bold opacity-80">mg/dL</span>
-            </span>
+        <div className="flex flex-row gap-6 w-full">
+          {/* Glucose Level Card */}
+          <div className="min-w-96 rounded-xl p-6 text-white bg-linear-to-r from-orange-400 to-amber-400 shadow-sm relative overflow-hidden flex flex-col justify-center">
+            <div className="relative z-10 flex flex-col items-start gap-1">
+              <span className="text-sm font-bold opacity-90">
+                Glucose Level
+              </span>
+              <span className="text-5xl font-black">
+                {recentGlucoseVitals.length > 0
+                  ? recentGlucoseVitals[recentGlucoseVitals.length - 1]
+                      .bloodSugarFasting ||
+                    recentGlucoseVitals[recentGlucoseVitals.length - 1]
+                      .bloodSugarAfterFood
+                  : "--"}{" "}
+                <span className="text-2xl font-bold opacity-80">mg/dL</span>
+              </span>
+            </div>
+            <div className="absolute bottom-0 left-0 right-0 h-16 opacity-30">
+              <svg
+                viewBox="0 0 500 150"
+                preserveAspectRatio="none"
+                className="h-full w-full transform -scale-x-100"
+              >
+                <path
+                  d="M0.00,49.98 C150.00,150.00 349.20,-50.00 500.00,49.98 L500.00,150.00 L0.00,150.00 Z"
+                  fill="currentColor"
+                ></path>
+              </svg>
+            </div>
           </div>
-          <div className="absolute bottom-0 left-0 right-0 h-16 opacity-30">
-            <svg viewBox="0 0 500 150" preserveAspectRatio="none" className="h-full w-full transform -scale-x-100">
-              <path d="M0.00,49.98 C150.00,150.00 349.20,-50.00 500.00,49.98 L500.00,150.00 L0.00,150.00 Z" fill="currentColor"></path>
-            </svg>
+
+          {/* Glucose Chart */}
+          <div className="w-full bg-white rounded-xl shadow-sm border border-slate-100 p-6 flex flex-col gap-4">
+            <div className="flex justify-between items-center">
+              <h4 className="text-slate-600 font-bold text-sm">
+                Glucose (Recent)
+              </h4>
+              <Icon
+                icon="solar:alt-arrow-down-linear"
+                className="text-slate-400"
+              />
+            </div>
+            <div className="flex-1 min-h-[200px] w-full flex items-center justify-center">
+              {recentGlucoseVitals.length > 0 ? (
+                <Line data={glucoseData} options={glucoseOptions} />
+              ) : (
+                <span className="text-slate-400 text-xs font-bold uppercase tracking-widest">
+                  No API Data
+                </span>
+              )}
+            </div>
           </div>
         </div>
 
         {/* Book Appointment Card */}
-        <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6 flex flex-col justify-between">
+        {/* <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6 flex flex-col justify-between">
           <div className="flex justify-between items-center pb-2 border-b border-slate-50">
-            <h4 className="text-slate-600 font-bold text-sm">Book Appointment</h4>
-            <Icon icon="solar:calendar-date-bold-duotone" className="text-teal-500" width="20" />
+            <h4 className="text-slate-600 font-bold text-sm">
+              Book Appointment
+            </h4>
+            <Icon
+              icon="solar:calendar-date-bold-duotone"
+              className="text-teal-500"
+              width="20"
+            />
           </div>
           <div className="flex flex-col gap-4 mt-4 flex-1">
             {upcomingClinicAppointment ? (
               <div className="flex items-center gap-4">
                 <div className="w-14 h-14 bg-teal-50 rounded-xl flex flex-col items-center justify-center text-teal-600 shrink-0 border border-teal-100/50">
-                  <span className="text-xl font-black leading-none">{dayjs(upcomingClinicAppointment.appointmentDate).date()}</span>
-                  <span className="text-[10px] font-bold mt-0.5 uppercase tracking-wider">{dayjs(upcomingClinicAppointment.appointmentDate).format("MMM")}</span>
+                  <span className="text-xl font-black leading-none">
+                    {dayjs(upcomingClinicAppointment.appointmentDate).date()}
+                  </span>
+                  <span className="text-[10px] font-bold mt-0.5 uppercase tracking-wider">
+                    {dayjs(upcomingClinicAppointment.appointmentDate).format(
+                      "MMM",
+                    )}
+                  </span>
                 </div>
                 <div className="flex flex-col flex-1 overflow-hidden">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[9px] font-bold px-2 py-0.5 rounded-md bg-teal-50 text-teal-600 uppercase tracking-wider">Clinic</span>
-                    <span className="text-slate-400 text-[11px] font-bold">{dayjs(upcomingClinicAppointment.appointmentDate).format("h:mm A")}</span>
+                    <span className="text-[9px] font-bold px-2 py-0.5 rounded-md bg-teal-50 text-teal-600 uppercase tracking-wider">
+                      Clinic
+                    </span>
+                    <span className="text-slate-400 text-[11px] font-bold">
+                      {dayjs(upcomingClinicAppointment.appointmentDate).format(
+                        "h:mm A",
+                      )}
+                    </span>
                   </div>
-                  <span className="text-slate-700 font-bold text-sm truncate">Dr. {upcomingClinicAppointment.docName || "Physician"}</span>
+                  <span className="text-slate-700 font-bold text-sm truncate">
+                    Dr. {upcomingClinicAppointment.docName || "Physician"}
+                  </span>
                 </div>
               </div>
             ) : (
@@ -591,34 +780,58 @@ const PatientDashboardOverview = () => {
                 <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center text-slate-300">
                   <Icon icon="solar:calendar-add-bold" width="24" />
                 </div>
-                <span className="text-slate-500 text-xs font-bold text-center">No Clinic Visit</span>
+                <span className="text-slate-500 text-xs font-bold text-center">
+                  No Clinic Visit
+                </span>
               </div>
             )}
-            <button onClick={() => navigate("/")} className="w-full mt-auto bg-teal-50 hover:bg-teal-100 text-teal-600 py-2.5 rounded-lg font-bold text-xs transition-colors border border-teal-100">
+            <button
+              onClick={() => navigate("/")}
+              className="w-full mt-auto bg-teal-50 hover:bg-teal-100 text-teal-600 py-2.5 rounded-lg font-bold text-xs transition-colors border border-teal-100"
+            >
               BOOK NOW
             </button>
           </div>
-        </div>
+        </div> */}
 
         {/* Book Videochat Card */}
-        <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6 flex flex-col justify-between">
+        {/* <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6 flex flex-col justify-between">
           <div className="flex justify-between items-center pb-2 border-b border-slate-50">
             <h4 className="text-slate-600 font-bold text-sm">Book Videochat</h4>
-            <Icon icon="solar:videocamera-bold-duotone" className="text-indigo-500" width="20" />
+            <Icon
+              icon="solar:videocamera-bold-duotone"
+              className="text-indigo-500"
+              width="20"
+            />
           </div>
           <div className="flex flex-col gap-4 mt-4 flex-1">
             {upcomingVideoAppointment ? (
               <div className="flex items-center gap-4">
                 <div className="w-14 h-14 bg-indigo-50 rounded-xl flex flex-col items-center justify-center text-indigo-600 shrink-0 border border-indigo-100/50">
-                  <span className="text-xl font-black leading-none">{dayjs(upcomingVideoAppointment.appointmentDate).date()}</span>
-                  <span className="text-[10px] font-bold mt-0.5 uppercase tracking-wider">{dayjs(upcomingVideoAppointment.appointmentDate).format("MMM")}</span>
+                  <span className="text-xl font-black leading-none">
+                    {dayjs(upcomingVideoAppointment.appointmentDate).date()}
+                  </span>
+                  <span className="text-[10px] font-bold mt-0.5 uppercase tracking-wider">
+                    {dayjs(upcomingVideoAppointment.appointmentDate).format(
+                      "MMM",
+                    )}
+                  </span>
                 </div>
                 <div className="flex flex-col flex-1 overflow-hidden">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[9px] font-bold px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-600 uppercase tracking-wider">Video</span>
-                    <span className="text-slate-400 text-[11px] font-bold">{upcomingVideoAppointment.time || dayjs(upcomingVideoAppointment.appointmentDate).format("h:mm A")}</span>
+                    <span className="text-[9px] font-bold px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-600 uppercase tracking-wider">
+                      Video
+                    </span>
+                    <span className="text-slate-400 text-[11px] font-bold">
+                      {upcomingVideoAppointment.time ||
+                        dayjs(upcomingVideoAppointment.appointmentDate).format(
+                          "h:mm A",
+                        )}
+                    </span>
                   </div>
-                  <span className="text-slate-700 font-bold text-sm truncate">Dr. {upcomingVideoAppointment.docName || "Physician"}</span>
+                  <span className="text-slate-700 font-bold text-sm truncate">
+                    Dr. {upcomingVideoAppointment.docName || "Physician"}
+                  </span>
                 </div>
               </div>
             ) : (
@@ -626,182 +839,29 @@ const PatientDashboardOverview = () => {
                 <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center text-slate-300">
                   <Icon icon="solar:videocamera-add-bold" width="24" />
                 </div>
-                <span className="text-slate-500 text-xs font-bold text-center">No Video Consult</span>
+                <span className="text-slate-500 text-xs font-bold text-center">
+                  No Video Consult
+                </span>
               </div>
             )}
-            <button onClick={() => navigate("/")} className="w-full mt-auto bg-indigo-50 hover:bg-indigo-100 text-indigo-600 py-2.5 rounded-lg font-bold text-xs transition-colors border border-indigo-100">
+            <button
+              onClick={() => navigate("/")}
+              className="w-full mt-auto bg-indigo-50 hover:bg-indigo-100 text-indigo-600 py-2.5 rounded-lg font-bold text-xs transition-colors border border-indigo-100"
+            >
               BOOK NOW
             </button>
           </div>
-        </div>
-      </div>
-
-      {/* Clinic Support Chat */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <h3 className="text-slate-800 font-bold text-lg">
-            Clinic support chat
-          </h3>
-          <Icon
-            icon="solar:double-alt-arrow-right-bold-duotone"
-            className="text-blue-500"
-            width="20"
-          />
-        </div>
-        <div className="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-slate-50/50 text-[10px] uppercase font-black text-slate-500 tracking-widest border-b border-slate-100">
-                <th className="p-4">Clinic Name</th>
-                <th className="p-4">Location</th>
-                <th className="p-4 text-center">Primary Contact No</th>
-                <th className="p-4 text-center">Primary Whatsapp No</th>
-                <th className="p-4 text-center">Web Chat</th>
-              </tr>
-            </thead>
-            <tbody className="text-sm text-slate-600">
-              {clinicIdResolvedData.map((clinic, index) => (
-                <React.Fragment key={clinic.cid || index}>
-                  <tr 
-                    className={`cursor-pointer transition-colors duration-200 hover:bg-blue-50/50 ${expandedClinicId === clinic.cid ? 'bg-blue-50/30' : ''}`}
-                    onClick={() => setExpandedClinicId(expandedClinicId === clinic.cid ? null : clinic.cid)}
-                  >
-                    <td className="p-4 border-b border-slate-100 align-top font-bold text-slate-800">
-                      {clinic.clinic_name}
-                    </td>
-                    <td className="p-4 border-b border-slate-100 align-top">
-                      {clinic.address || "Location"}
-                    </td>
-                    <td className="p-4 border-b border-slate-100 align-top text-center">
-                      {clinic.phone ? (
-                        <a 
-                          href={`tel:+91${clinic.phone}`} 
-                          onClick={(e) => e.stopPropagation()}
-                          className="inline-flex items-center justify-center gap-2 text-blue-500 hover:text-blue-600 font-medium transition-colors bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-full"
-                        >
-                          <Icon icon="solar:phone-bold-duotone" width="16" />
-                          +91 {clinic.phone}
-                        </a>
-                      ) : (
-                        <span className="text-slate-400 font-medium">N/A</span>
-                      )}
-                    </td>
-                    <td className="p-4 border-b border-slate-100 align-top text-center">
-                      {clinic.phone ? (
-                        <a 
-                          href={`https://wa.me/91${clinic.phone}`} 
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className="inline-flex items-center justify-center gap-2 text-green-600 hover:text-green-700 font-medium transition-colors bg-green-50 hover:bg-green-100 px-3 py-1.5 rounded-full"
-                        >
-                          <Icon icon="ic:baseline-whatsapp" width="16" />
-                          +91 {clinic.phone}
-                        </a>
-                      ) : (
-                        <span className="text-slate-400 font-medium">N/A</span>
-                      )}
-                    </td>
-                    <td className="p-4 border-b border-slate-100 align-middle text-center">
-                      <button 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate('/dashboard/chat', { state: { clinicName: clinic.clinic_name, openChat: true } });
-                        }}
-                        className="inline-flex items-center justify-center gap-2 font-medium transition-colors px-4 py-2 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200"
-                      >
-                        <Icon icon="solar:chat-round-dots-bold-duotone" width="18" />
-                        Chat
-                      </button>
-                    </td>
-                  </tr>
-
-                  {expandedClinicId === clinic.cid && (
-                    <>
-                      {[
-                        "Customer service",
-                        "Pharmacy",
-                        "Blood Test center",
-                        "Scan Center",
-                      ].map((service) => (
-                        <tr key={`${clinic.cid}-${service}`} className="bg-slate-50/80 border-b border-slate-100 last:border-b-slate-200 hover:bg-white transition-colors group">
-                          <td colSpan={2} className="p-4 align-middle font-semibold text-slate-600 pl-8 relative">
-                            <div className="absolute left-0 top-2 bottom-2 w-1 bg-gradient-to-b from-blue-400 to-indigo-400 rounded-r-md opacity-70 group-hover:opacity-100 transition-opacity"></div>
-                            {service}
-                          </td>
-                          <td className="p-4 align-middle">
-                            <div className="flex justify-center">
-                              <button 
-                                className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-full hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all shadow-sm hover:shadow-md transform hover:-translate-y-0.5 font-medium text-sm w-max justify-center" 
-                                title="Phone"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  if (clinic.phone) window.location.href = `tel:+91${clinic.phone}`;
-                                }}
-                              >
-                                <Icon icon="solar:phone-bold" width="18" />
-                                {clinic.phone ? `+91 ${clinic.phone}` : "N/A"}
-                              </button>
-                            </div>
-                          </td>
-                          <td className="p-4 align-middle">
-                            <div className="flex justify-center">
-                              <button 
-                                className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-full hover:bg-green-50 hover:text-green-600 hover:border-green-200 transition-all shadow-sm hover:shadow-md transform hover:-translate-y-0.5 font-medium text-sm w-max justify-center" 
-                                title="WhatsApp"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  if (clinic.phone) window.open(`https://wa.me/91${clinic.phone}`, '_blank');
-                                }}
-                              >
-                                <Icon icon="ic:baseline-whatsapp" width="18" />
-                                {clinic.phone ? `+91 ${clinic.phone}` : "N/A"}
-                              </button>
-                            </div>
-                          </td>
-                          <td className="p-4 align-middle">
-                            <div className="flex justify-center gap-2">
-                              <button 
-                                className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-full hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-all shadow-sm hover:shadow-md transform hover:-translate-y-0.5 font-medium text-sm" 
-                                title="Web Chat"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  navigate('/dashboard/chat', { state: { clinicName: clinic.clinic_name, openChat: true } });
-                                }}
-                              >
-                                <Icon icon="solar:chat-round-dots-bold" width="18" />
-                                Web Chat
-                              </button>
-                              <button 
-                                className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-full hover:bg-purple-50 hover:text-purple-600 hover:border-purple-200 transition-all shadow-sm hover:shadow-md transform hover:-translate-y-0.5 font-medium text-sm" 
-                                title="Video Consult"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  navigate('/dashboard/video-consult', { state: { clinicName: clinic.clinic_name, openConsult: true } });
-                                }}
-                              >
-                                <Icon icon="solar:videocamera-bold" width="18" />
-                                Video Consult
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </>
-                  )}
-                </React.Fragment>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        </div> */}
       </div>
 
       {/* Bottom Section */}
       <div className="flex flex-row gap-6 mt-2 w-full">
         {/* Bills & Invoices Table */}
-        <div className="bg-white w-full rounded-xl shadow-sm border border-slate-100 p-6 flex flex-col gap-4">
+        {/* <div className="bg-white w-full rounded-xl shadow-sm border border-slate-100 p-6 flex flex-col gap-4">
           <div className="flex justify-between items-center mb-2">
-            <h4 className="text-slate-600 font-bold text-sm">Bills & Invoices</h4>
+            <h4 className="text-slate-600 font-bold text-sm">
+              Bills & Invoices
+            </h4>
             <span
               className="text-blue-500 font-bold text-xs cursor-pointer"
               onClick={() => navigate("/dashboard/bills")}
@@ -853,7 +913,10 @@ const PatientDashboardOverview = () => {
                             className="w-8 h-8 rounded-full border border-slate-200 inline-flex items-center justify-center text-blue-500 hover:bg-blue-50 hover:border-blue-200 transition-colors"
                             title="Download/Print Bill"
                           >
-                            <Icon icon="solar:download-minimalistic-bold-duotone" width="16" />
+                            <Icon
+                              icon="solar:download-minimalistic-bold-duotone"
+                              width="16"
+                            />
                           </button>
                         </div>
                       </td>
@@ -869,12 +932,14 @@ const PatientDashboardOverview = () => {
               </span>
             </div>
           )}
-        </div>
+        </div> */}
 
         {/* Test Results */}
         <div className="bg-white w-full rounded-xl shadow-sm border border-slate-100 p-6 flex flex-col gap-4">
           <div className="flex justify-between items-center mb-2">
-            <h4 className="text-slate-600 font-bold text-sm">Blood test results</h4>
+            <h4 className="text-slate-600 font-bold text-sm">
+              Blood test results
+            </h4>
             <span
               className="text-blue-500 font-bold text-xs cursor-pointer"
               onClick={() => navigate("/dashboard/all-records")}
@@ -882,7 +947,7 @@ const PatientDashboardOverview = () => {
               More
             </span>
           </div>
-          {testResults.length > 0 ? (
+          {labResults.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
@@ -894,7 +959,7 @@ const PatientDashboardOverview = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {testResults.map((test, i) => (
+                  {labResults.map((test, i) => (
                     <tr
                       key={i}
                       className="border-b border-slate-50 last:border-0 hover:bg-slate-50 transition-colors"
@@ -904,6 +969,101 @@ const PatientDashboardOverview = () => {
                       </td>
                       <td className="py-3 pr-4 text-sm font-bold text-slate-700">
                         {test.scanType || test.labType || "Test Report"}
+                      </td>
+                      <td className="py-3 pr-4">
+                        <span
+                          className={`text-[10px] font-bold px-2 py-1 rounded-md whitespace-nowrap ${
+                            test.status === "Completed"
+                              ? "bg-emerald-50 text-emerald-600"
+                              : test.status === "Report Not Ready"
+                                ? "bg-amber-50 text-amber-600"
+                                : test.status === "Not Scheduled"
+                                  ? "bg-slate-100 text-slate-500"
+                                  : "bg-blue-50 text-blue-600"
+                          }`}
+                        >
+                          {test.status || "Pending"}
+                        </span>
+                      </td>
+                      <td className="py-3 pl-2 text-right">
+                        {test.finalReportFileUrl ||
+                        (test.finalReportFileUrls &&
+                          test.finalReportFileUrls.length > 0) ? (
+                          <button
+                            onClick={() =>
+                              window.open(
+                                test.finalReportFileUrl ||
+                                  test.finalReportFileUrls[0],
+                                "_blank",
+                              )
+                            }
+                            className="w-8 h-8 rounded-full border border-slate-200 inline-flex items-center justify-center text-blue-500 hover:bg-blue-50 hover:border-blue-200 transition-colors"
+                            title="Download/View Report"
+                          >
+                            <Icon
+                              icon="solar:download-minimalistic-bold-duotone"
+                              width="16"
+                            />
+                          </button>
+                        ) : (
+                          <button
+                            className="w-8 h-8 rounded-full border border-slate-100 inline-flex items-center justify-center text-slate-300 cursor-not-allowed"
+                            title="Report not available"
+                          >
+                            <Icon
+                              icon="solar:download-minimalistic-bold-duotone"
+                              width="16"
+                            />
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center h-full">
+              <span className="text-slate-400 text-xs font-bold uppercase tracking-widest py-8">
+                No API Data
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Scan Reports */}
+        <div className="bg-white w-full rounded-xl shadow-sm border border-slate-100 p-6 flex flex-col gap-4">
+          <div className="flex justify-between items-center mb-2">
+            <h4 className="text-slate-600 font-bold text-sm">Scan reports</h4>
+            <span
+              className="text-blue-500 font-bold text-xs cursor-pointer"
+              onClick={() => navigate("/dashboard/all-records")}
+            >
+              More
+            </span>
+          </div>
+          {scanResults.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-100 text-[10px] uppercase tracking-wider text-slate-400">
+                    <th className="pb-2 font-bold">Date</th>
+                    <th className="pb-2 font-bold">Test Name</th>
+                    <th className="pb-2 font-bold">Status</th>
+                    <th className="pb-2 font-bold text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {scanResults.map((test, i) => (
+                    <tr
+                      key={i}
+                      className="border-b border-slate-50 last:border-0 hover:bg-slate-50 transition-colors"
+                    >
+                      <td className="py-3 pr-4 text-xs text-slate-500 font-medium whitespace-nowrap">
+                        {dayjs(test.createdAt).format("DD MMM YYYY")}
+                      </td>
+                      <td className="py-3 pr-4 text-sm font-bold text-slate-700">
+                        {test.scanType || test.scanType || "Scan Report"}
                       </td>
                       <td className="py-3 pr-4">
                         <span
@@ -1029,61 +1189,16 @@ const PatientDashboardOverview = () => {
           )}
         </div>
       </div>
-      
-      {/* Vitals Charts Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-        {/* Glucose Chart */}
-        <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6 flex flex-col gap-4">
-          <div className="flex justify-between items-center">
-            <h4 className="text-slate-600 font-bold text-sm">
-              Glucose (Recent)
-            </h4>
-            <Icon
-              icon="solar:alt-arrow-down-linear"
-              className="text-slate-400"
-            />
-          </div>
-          <div className="flex-1 min-h-[200px] w-full flex items-center justify-center">
-            {recentGlucoseVitals.length > 0 ? (
-              <Line data={glucoseData} options={glucoseOptions} />
-            ) : (
-              <span className="text-slate-400 text-xs font-bold uppercase tracking-widest">
-                No API Data
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* Blood Pressure Chart */}
-        <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6 flex flex-col gap-4">
-          <div className="flex justify-between items-center">
-            <h4 className="text-slate-600 font-bold text-sm">
-              Blood Pressure
-            </h4>
-            <Icon
-              icon="solar:heart-pulse-bold-duotone"
-              className="text-red-400"
-            />
-          </div>
-          <div className="flex-1 min-h-[200px] w-full flex items-center justify-center">
-            {recentBpVitals.length > 0 ? (
-              <Line data={bpData} options={bpOptions} />
-            ) : (
-              <span className="text-slate-400 text-xs font-bold uppercase tracking-widest">
-                No API Data
-              </span>
-            )}
-          </div>
-        </div>
-      </div>
 
       {/* Clinic Wise Data */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6 flex flex-col gap-4 mt-2">
         <div className="flex items-center gap-2 mb-2 border-b border-slate-50 pb-4">
-          <Icon icon="solar:buildings-bold-duotone" className="text-blue-500" width="24" />
-          <h3 className="text-slate-800 font-bold text-lg">
-            Clinic Wise Data
-          </h3>
+          <Icon
+            icon="solar:buildings-bold-duotone"
+            className="text-blue-500"
+            width="24"
+          />
+          <h3 className="text-slate-800 font-bold text-lg">Clinic Wise Data</h3>
         </div>
         <div className="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
           <table className="w-full text-left border-collapse whitespace-nowrap">
@@ -1104,59 +1219,110 @@ const PatientDashboardOverview = () => {
             <tbody className="text-sm text-slate-600">
               {clinicIdResolvedData.length > 0 ? (
                 clinicIdResolvedData.map((clinic, index) => {
-                  const clinicPrescriptions = prescriptions.filter(p => p._type === 'prescription' && p._clinicName === clinic.clinic_name);
-                  const clinicLabs = prescriptions.filter(p => p._type === 'lab' && p._clinicName === clinic.clinic_name);
-                  const clinicScans = prescriptions.filter(p => p._type === 'scan' && p._clinicName === clinic.clinic_name);
-                  
+                  const clinicPrescriptions = prescriptions.filter(
+                    (p) =>
+                      p._type === "prescription" &&
+                      p._clinicName === clinic.clinic_name,
+                  );
+                  const clinicLabs = prescriptions.filter(
+                    (p) =>
+                      p._type === "lab" && p._clinicName === clinic.clinic_name,
+                  );
+                  const clinicScans = prescriptions.filter(
+                    (p) =>
+                      p._type === "scan" &&
+                      p._clinicName === clinic.clinic_name,
+                  );
+
                   return (
                     <React.Fragment key={clinic.cid || index}>
-                      <tr 
-                        className={`cursor-pointer border-b border-slate-100 hover:bg-slate-50/80 transition-colors ${expandedDataClinicId === clinic.cid ? 'bg-slate-50/50' : ''}`}
-                        onClick={() => setExpandedDataClinicId(expandedDataClinicId === clinic.cid ? null : clinic.cid)}
+                      <tr
+                        className={`cursor-pointer border-b border-slate-100 hover:bg-slate-50/80 transition-colors ${expandedDataClinicId === clinic.cid ? "bg-slate-50/50" : ""}`}
+                        onClick={() =>
+                          setExpandedDataClinicId(
+                            expandedDataClinicId === clinic.cid
+                              ? null
+                              : clinic.cid,
+                          )
+                        }
                       >
                         <td className="p-4 pl-6 font-bold text-slate-800">
                           <div className="flex items-center gap-2">
-                            <Icon 
-                              icon={expandedDataClinicId === clinic.cid ? "solar:alt-arrow-down-bold" : "solar:alt-arrow-right-bold"} 
+                            <Icon
+                              icon={
+                                expandedDataClinicId === clinic.cid
+                                  ? "solar:alt-arrow-down-bold"
+                                  : "solar:alt-arrow-right-bold"
+                              }
                               className="text-blue-500 transition-transform"
                             />
                             {clinic.clinic_name}
                           </div>
                         </td>
-                        <td className="p-4 font-medium">{clinic.address || "N/A"}</td>
+                        <td className="p-4 font-medium">
+                          {clinic.address || "N/A"}
+                        </td>
                         <td className="p-4">
                           <div className="flex justify-center">
-                            <span className="w-10 h-8 flex items-center justify-center bg-blue-50 text-blue-600 font-black rounded-lg border border-blue-100">{clinicPrescriptions.length}</span>
+                            <span className="w-10 h-8 flex items-center justify-center bg-blue-50 text-blue-600 font-black rounded-lg border border-blue-100">
+                              {clinicPrescriptions.length}
+                            </span>
                           </div>
                         </td>
                         <td className="p-4">
                           <div className="flex justify-center">
-                            <span className="w-10 h-8 flex items-center justify-center bg-rose-50 text-rose-600 font-black rounded-lg border border-rose-100">{clinicLabs.length}</span>
+                            <span className="w-10 h-8 flex items-center justify-center bg-rose-50 text-rose-600 font-black rounded-lg border border-rose-100">
+                              {clinicLabs.length}
+                            </span>
                           </div>
                         </td>
                         <td className="p-4">
                           <div className="flex justify-center">
-                            <span className="w-10 h-8 flex items-center justify-center bg-purple-50 text-purple-600 font-black rounded-lg border border-purple-100">{clinicScans.length}</span>
+                            <span className="w-10 h-8 flex items-center justify-center bg-purple-50 text-purple-600 font-black rounded-lg border border-purple-100">
+                              {clinicScans.length}
+                            </span>
                           </div>
                         </td>
                         <td className="p-4 align-middle">
                           <div className="flex justify-center">
-                            <button 
+                            <button
                               className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors shadow-sm text-xs font-bold w-max"
-                              onClick={(e) => { e.stopPropagation(); if (clinic.phone) window.open(`tel:${clinic.phone}`, '_self'); }}
-                              title={clinic.phone ? `Call +91 ${clinic.phone}` : "Call"}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (clinic.phone)
+                                  window.open(`tel:${clinic.phone}`, "_self");
+                              }}
+                              title={
+                                clinic.phone
+                                  ? `Call +91 ${clinic.phone}`
+                                  : "Call"
+                              }
                             >
-                              <Icon icon="solar:phone-calling-bold-duotone" width="16" />
+                              <Icon
+                                icon="solar:phone-calling-bold-duotone"
+                                width="16"
+                              />
                               {clinic.phone ? `+91 ${clinic.phone}` : "N/A"}
                             </button>
                           </div>
                         </td>
                         <td className="p-4 align-middle">
                           <div className="flex justify-center">
-                            <button 
+                            <button
                               className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-50 text-green-600 hover:bg-green-100 transition-colors shadow-sm text-xs font-bold w-max"
-                              onClick={(e) => { e.stopPropagation(); if (clinic.phone) window.open(`https://wa.me/91${clinic.phone}`, '_blank'); }}
-                              title={clinic.phone ? `WhatsApp +91 ${clinic.phone}` : "WhatsApp"}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (clinic.phone)
+                                  window.open(
+                                    `https://wa.me/91${clinic.phone}`,
+                                    "_blank",
+                                  );
+                              }}
+                              title={
+                                clinic.phone
+                                  ? `WhatsApp +91 ${clinic.phone}`
+                                  : "WhatsApp"
+                              }
                             >
                               <Icon icon="logos:whatsapp-icon" width="16" />
                               {clinic.phone ? `+91 ${clinic.phone}` : "N/A"}
@@ -1165,36 +1331,69 @@ const PatientDashboardOverview = () => {
                         </td>
                         <td className="p-4 align-middle">
                           <div className="flex justify-center">
-                            <button 
+                            <button
                               className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors shadow-sm text-xs font-bold w-max"
-                              onClick={(e) => { e.stopPropagation(); navigate('/dashboard/chat', { state: { clinicName: clinic.clinic_name, openChat: true } }); }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate("/dashboard/chat", {
+                                  state: {
+                                    clinicName: clinic.clinic_name,
+                                    openChat: true,
+                                  },
+                                });
+                              }}
                               title="Web Chat"
                             >
-                              <Icon icon="solar:chat-round-dots-bold-duotone" width="16" />
+                              <Icon
+                                icon="solar:chat-round-dots-bold-duotone"
+                                width="16"
+                              />
                               Web Chat
                             </button>
                           </div>
                         </td>
                         <td className="p-4 align-middle">
                           <div className="flex justify-center">
-                            <button 
+                            <button
                               className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors shadow-sm text-xs font-bold w-max"
-                              onClick={(e) => { e.stopPropagation(); navigate('/dashboard/video-consult', { state: { clinicName: clinic.clinic_name, openConsult: true } }); }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate("/dashboard/video-consult", {
+                                  state: {
+                                    clinicName: clinic.clinic_name,
+                                    openConsult: true,
+                                  },
+                                });
+                              }}
                               title="Book Video Appointment"
                             >
-                              <Icon icon="solar:videocamera-bold-duotone" width="16" />
+                              <Icon
+                                icon="solar:videocamera-bold-duotone"
+                                width="16"
+                              />
                               Video Appt
                             </button>
                           </div>
                         </td>
                         <td className="p-4 align-middle">
                           <div className="flex justify-center">
-                            <button 
+                            <button
                               className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-teal-50 text-teal-600 hover:bg-teal-100 transition-colors shadow-sm text-xs font-bold w-max"
-                              onClick={(e) => { e.stopPropagation(); navigate('/dashboard/attend-clinics', { state: { clinicName: clinic.clinic_name, openAppointment: true } }); }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate("/dashboard/attend-clinics", {
+                                  state: {
+                                    clinicName: clinic.clinic_name,
+                                    openAppointment: true,
+                                  },
+                                });
+                              }}
                               title="Book Appointment"
                             >
-                              <Icon icon="solar:calendar-add-bold-duotone" width="16" />
+                              <Icon
+                                icon="solar:calendar-add-bold-duotone"
+                                width="16"
+                              />
                               Book Appt
                             </button>
                           </div>
@@ -1206,25 +1405,41 @@ const PatientDashboardOverview = () => {
                         <tr className="bg-slate-50/30 border-b border-slate-200 shadow-inner">
                           <td colSpan={10} className="p-6">
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                              
                               {/* Prescriptions */}
                               <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm flex flex-col gap-3 relative overflow-hidden">
                                 <div className="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
                                 <h4 className="text-[10px] font-black uppercase tracking-widest text-blue-500 flex items-center gap-2">
-                                  <Icon icon="solar:document-medicine-bold-duotone" width="16" />
+                                  <Icon
+                                    icon="solar:document-medicine-bold-duotone"
+                                    width="16"
+                                  />
                                   Prescriptions List
                                 </h4>
                                 <div className="flex flex-col gap-2 max-h-40 overflow-y-auto custom-scrollbar">
-                                  {clinicPrescriptions.length > 0 ? clinicPrescriptions.map((p, idx) => (
-                                    <div 
-                                      key={idx} 
-                                      className="flex flex-col bg-slate-50 p-2 rounded-md cursor-pointer hover:bg-slate-100 transition-colors hover:shadow-sm"
-                                      onClick={() => setSelectedRecordDetails(p)}
-                                    >
-                                      <span className="text-xs font-bold text-slate-700 truncate">{p.medication || "Prescription"}</span>
-                                      <span className="text-[10px] text-slate-500">{dayjs(p.createdAt).format("DD MMM YYYY")}</span>
-                                    </div>
-                                  )) : <span className="text-xs text-slate-400 font-medium italic">No prescriptions found.</span>}
+                                  {clinicPrescriptions.length > 0 ? (
+                                    clinicPrescriptions.map((p, idx) => (
+                                      <div
+                                        key={idx}
+                                        className="flex flex-col bg-slate-50 p-2 rounded-md cursor-pointer hover:bg-slate-100 transition-colors hover:shadow-sm"
+                                        onClick={() =>
+                                          setSelectedRecordDetails(p)
+                                        }
+                                      >
+                                        <span className="text-xs font-bold text-slate-700 truncate">
+                                          {p.medication || "Prescription"}
+                                        </span>
+                                        <span className="text-[10px] text-slate-500">
+                                          {dayjs(p.createdAt).format(
+                                            "DD MMM YYYY",
+                                          )}
+                                        </span>
+                                      </div>
+                                    ))
+                                  ) : (
+                                    <span className="text-xs text-slate-400 font-medium italic">
+                                      No prescriptions found.
+                                    </span>
+                                  )}
                                 </div>
                               </div>
 
@@ -1232,20 +1447,37 @@ const PatientDashboardOverview = () => {
                               <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm flex flex-col gap-3 relative overflow-hidden">
                                 <div className="absolute top-0 left-0 w-1 h-full bg-rose-500"></div>
                                 <h4 className="text-[10px] font-black uppercase tracking-widest text-rose-500 flex items-center gap-2">
-                                  <Icon icon="solar:test-tube-bold-duotone" width="16" />
+                                  <Icon
+                                    icon="solar:test-tube-bold-duotone"
+                                    width="16"
+                                  />
                                   Lab Reports List
                                 </h4>
                                 <div className="flex flex-col gap-2 max-h-40 overflow-y-auto custom-scrollbar">
-                                  {clinicLabs.length > 0 ? clinicLabs.map((l, idx) => (
-                                    <div 
-                                      key={idx} 
-                                      className="flex flex-col bg-slate-50 p-2 rounded-md cursor-pointer hover:bg-slate-100 transition-colors hover:shadow-sm"
-                                      onClick={() => setSelectedRecordDetails(l)}
-                                    >
-                                      <span className="text-xs font-bold text-slate-700 truncate">{l.labType || "Lab Report"}</span>
-                                      <span className="text-[10px] text-slate-500">{dayjs(l.createdAt).format("DD MMM YYYY")}</span>
-                                    </div>
-                                  )) : <span className="text-xs text-slate-400 font-medium italic">No lab reports found.</span>}
+                                  {clinicLabs.length > 0 ? (
+                                    clinicLabs.map((l, idx) => (
+                                      <div
+                                        key={idx}
+                                        className="flex flex-col bg-slate-50 p-2 rounded-md cursor-pointer hover:bg-slate-100 transition-colors hover:shadow-sm"
+                                        onClick={() =>
+                                          setSelectedRecordDetails(l)
+                                        }
+                                      >
+                                        <span className="text-xs font-bold text-slate-700 truncate">
+                                          {l.labType || "Lab Report"}
+                                        </span>
+                                        <span className="text-[10px] text-slate-500">
+                                          {dayjs(l.createdAt).format(
+                                            "DD MMM YYYY",
+                                          )}
+                                        </span>
+                                      </div>
+                                    ))
+                                  ) : (
+                                    <span className="text-xs text-slate-400 font-medium italic">
+                                      No lab reports found.
+                                    </span>
+                                  )}
                                 </div>
                               </div>
 
@@ -1253,23 +1485,39 @@ const PatientDashboardOverview = () => {
                               <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm flex flex-col gap-3 relative overflow-hidden">
                                 <div className="absolute top-0 left-0 w-1 h-full bg-purple-500"></div>
                                 <h4 className="text-[10px] font-black uppercase tracking-widest text-purple-500 flex items-center gap-2">
-                                  <Icon icon="solar:scanner-bold-duotone" width="16" />
+                                  <Icon
+                                    icon="solar:scanner-bold-duotone"
+                                    width="16"
+                                  />
                                   Scan Reports List
                                 </h4>
                                 <div className="flex flex-col gap-2 max-h-40 overflow-y-auto custom-scrollbar">
-                                  {clinicScans.length > 0 ? clinicScans.map((s, idx) => (
-                                    <div 
-                                      key={idx} 
-                                      className="flex flex-col bg-slate-50 p-2 rounded-md cursor-pointer hover:bg-slate-100 transition-colors hover:shadow-sm"
-                                      onClick={() => setSelectedRecordDetails(s)}
-                                    >
-                                      <span className="text-xs font-bold text-slate-700 truncate">{s.scanType || "Scan Report"}</span>
-                                      <span className="text-[10px] text-slate-500">{dayjs(s.createdAt).format("DD MMM YYYY")}</span>
-                                    </div>
-                                  )) : <span className="text-xs text-slate-400 font-medium italic">No scan reports found.</span>}
+                                  {clinicScans.length > 0 ? (
+                                    clinicScans.map((s, idx) => (
+                                      <div
+                                        key={idx}
+                                        className="flex flex-col bg-slate-50 p-2 rounded-md cursor-pointer hover:bg-slate-100 transition-colors hover:shadow-sm"
+                                        onClick={() =>
+                                          setSelectedRecordDetails(s)
+                                        }
+                                      >
+                                        <span className="text-xs font-bold text-slate-700 truncate">
+                                          {s.scanType || "Scan Report"}
+                                        </span>
+                                        <span className="text-[10px] text-slate-500">
+                                          {dayjs(s.createdAt).format(
+                                            "DD MMM YYYY",
+                                          )}
+                                        </span>
+                                      </div>
+                                    ))
+                                  ) : (
+                                    <span className="text-xs text-slate-400 font-medium italic">
+                                      No scan reports found.
+                                    </span>
+                                  )}
                                 </div>
                               </div>
-                              
                             </div>
                           </td>
                         </tr>
@@ -1279,7 +1527,10 @@ const PatientDashboardOverview = () => {
                 })
               ) : (
                 <tr>
-                  <td colSpan={10} className="p-8 text-center text-slate-400 font-bold text-xs uppercase tracking-widest">
+                  <td
+                    colSpan={10}
+                    className="p-8 text-center text-slate-400 font-bold text-xs uppercase tracking-widest"
+                  >
                     No Clinic Data Found
                   </td>
                 </tr>
@@ -1297,159 +1548,275 @@ const PatientDashboardOverview = () => {
       {/* Record Details Modal */}
       {selectedRecordDetails && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={() => setSelectedRecordDetails(null)}></div>
+          <div
+            className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
+            onClick={() => setSelectedRecordDetails(null)}
+          ></div>
           <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200">
-             {/* Header */}
-             <div className="flex justify-between items-center p-6 border-b border-slate-100 bg-slate-50/50">
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${selectedRecordDetails._type === 'prescription' ? 'bg-blue-100 text-blue-600' : selectedRecordDetails._type === 'lab' ? 'bg-rose-100 text-rose-600' : selectedRecordDetails._type === 'bill' ? 'bg-orange-100 text-orange-600' : 'bg-purple-100 text-purple-600'}`}>
-                    <Icon icon={selectedRecordDetails._type === 'prescription' ? 'solar:document-medicine-bold-duotone' : selectedRecordDetails._type === 'lab' ? 'solar:test-tube-bold-duotone' : selectedRecordDetails._type === 'bill' ? 'solar:bill-list-bold-duotone' : 'solar:scanner-bold-duotone'} width={24} />
-                  </div>
-                  <div>
-                    <h2 className="text-xl font-black text-slate-800">
-                      {selectedRecordDetails._type === 'prescription' ? 'Prescription Details' : 
-                       selectedRecordDetails._type === 'lab' ? 'Lab Report Details' : 
-                       selectedRecordDetails._type === 'bill' ? 'Bill Details' : 'Scan Report Details'}
-                    </h2>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{dayjs(selectedRecordDetails.createdAt).format("DD MMM YYYY, hh:mm A")}</span>
-                  </div>
-                </div>
-                <button 
-                  onClick={() => setSelectedRecordDetails(null)}
-                  className="p-2 hover:bg-slate-200 rounded-xl transition-colors text-slate-400 hover:text-slate-600"
+            {/* Header */}
+            <div className="flex justify-between items-center p-6 border-b border-slate-100 bg-slate-50/50">
+              <div className="flex items-center gap-3">
+                <div
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center ${selectedRecordDetails._type === "prescription" ? "bg-blue-100 text-blue-600" : selectedRecordDetails._type === "lab" ? "bg-rose-100 text-rose-600" : selectedRecordDetails._type === "bill" ? "bg-orange-100 text-orange-600" : "bg-purple-100 text-purple-600"}`}
                 >
-                  <Icon icon="solar:close-circle-bold" className="text-2xl" />
-                </button>
-             </div>
-             
-             {/* Body */}
-             <div className="p-6 overflow-y-auto custom-scrollbar flex-1 flex flex-col gap-8">
-                
-                {/* Medicines if prescription */}
-                {selectedRecordDetails._type === 'prescription' && selectedRecordDetails.medicinesData?.length > 0 && (
+                  <Icon
+                    icon={
+                      selectedRecordDetails._type === "prescription"
+                        ? "solar:document-medicine-bold-duotone"
+                        : selectedRecordDetails._type === "lab"
+                          ? "solar:test-tube-bold-duotone"
+                          : selectedRecordDetails._type === "bill"
+                            ? "solar:bill-list-bold-duotone"
+                            : "solar:scanner-bold-duotone"
+                    }
+                    width={24}
+                  />
+                </div>
+                <div>
+                  <h2 className="text-xl font-black text-slate-800">
+                    {selectedRecordDetails._type === "prescription"
+                      ? "Prescription Details"
+                      : selectedRecordDetails._type === "lab"
+                        ? "Lab Report Details"
+                        : selectedRecordDetails._type === "bill"
+                          ? "Bill Details"
+                          : "Scan Report Details"}
+                  </h2>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                    {dayjs(selectedRecordDetails.createdAt).format(
+                      "DD MMM YYYY, hh:mm A",
+                    )}
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedRecordDetails(null)}
+                className="p-2 hover:bg-slate-200 rounded-xl transition-colors text-slate-400 hover:text-slate-600"
+              >
+                <Icon icon="solar:close-circle-bold" className="text-2xl" />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-6 overflow-y-auto custom-scrollbar flex-1 flex flex-col gap-8">
+              {/* Medicines if prescription */}
+              {selectedRecordDetails._type === "prescription" &&
+                selectedRecordDetails.medicinesData?.length > 0 && (
                   <div>
                     <h3 className="text-sm font-black uppercase tracking-wider text-slate-800 mb-4 flex items-center gap-2">
-                      <Icon icon="solar:pill-bold-duotone" className="text-blue-500" width={18} />
+                      <Icon
+                        icon="solar:pill-bold-duotone"
+                        className="text-blue-500"
+                        width={18}
+                      />
                       Prescribed Medicines
                     </h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {selectedRecordDetails.medicinesData.map((med, i) => (
-                        <div key={i} className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex flex-col gap-3 hover:shadow-md transition-shadow">
-                          <span className="font-bold text-slate-800 text-base">{med.medication || med.medicationName}</span>
+                        <div
+                          key={i}
+                          className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex flex-col gap-3 hover:shadow-md transition-shadow"
+                        >
+                          <span className="font-bold text-slate-800 text-base">
+                            {med.medication || med.medicationName}
+                          </span>
                           <div className="flex flex-wrap gap-2 text-[10px]">
-                            <span className="bg-white px-2.5 py-1.5 rounded-lg border border-slate-200 font-bold text-slate-600 shadow-sm">{med.morning}-{med.afternoon}-{med.night}</span>
-                            <span className="bg-white px-2.5 py-1.5 rounded-lg border border-slate-200 font-bold text-slate-600 shadow-sm">{med.dosage} Unit</span>
-                            <span className="bg-white px-2.5 py-1.5 rounded-lg border border-slate-200 font-bold text-slate-600 shadow-sm uppercase">{med.af_bf}</span>
-                            <span className="bg-white px-2.5 py-1.5 rounded-lg border border-slate-200 font-bold text-slate-600 shadow-sm">{med.days} Days</span>
+                            <span className="bg-white px-2.5 py-1.5 rounded-lg border border-slate-200 font-bold text-slate-600 shadow-sm">
+                              {med.morning}-{med.afternoon}-{med.night}
+                            </span>
+                            <span className="bg-white px-2.5 py-1.5 rounded-lg border border-slate-200 font-bold text-slate-600 shadow-sm">
+                              {med.dosage} Unit
+                            </span>
+                            <span className="bg-white px-2.5 py-1.5 rounded-lg border border-slate-200 font-bold text-slate-600 shadow-sm uppercase">
+                              {med.af_bf}
+                            </span>
+                            <span className="bg-white px-2.5 py-1.5 rounded-lg border border-slate-200 font-bold text-slate-600 shadow-sm">
+                              {med.days} Days
+                            </span>
                           </div>
                         </div>
                       ))}
                     </div>
                   </div>
                 )}
-                
-                {/* Treatments if bill */}
-                {selectedRecordDetails._type === 'bill' && selectedRecordDetails.treatments?.length > 0 && (
+
+              {/* Treatments if bill */}
+              {selectedRecordDetails._type === "bill" &&
+                selectedRecordDetails.treatments?.length > 0 && (
                   <div>
                     <h3 className="text-sm font-black uppercase tracking-wider text-slate-800 mb-4 flex items-center gap-2">
-                      <Icon icon="solar:bill-list-bold-duotone" className="text-orange-500" width={18} />
+                      <Icon
+                        icon="solar:bill-list-bold-duotone"
+                        className="text-orange-500"
+                        width={18}
+                      />
                       Bill Treatments
                     </h3>
                     <div className="flex flex-col gap-4">
                       {selectedRecordDetails.treatments.map((t, i) => (
-                        <div key={i} className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex flex-col gap-2 hover:shadow-md transition-shadow">
+                        <div
+                          key={i}
+                          className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex flex-col gap-2 hover:shadow-md transition-shadow"
+                        >
                           <div className="flex justify-between items-center">
-                            <span className="font-bold text-slate-800 text-base">{t.name}</span>
-                            <span className="font-bold text-slate-800">₹{t.total}</span>
+                            <span className="font-bold text-slate-800 text-base">
+                              {t.name}
+                            </span>
+                            <span className="font-bold text-slate-800">
+                              ₹{t.total}
+                            </span>
                           </div>
                           <div className="flex flex-wrap gap-2 text-[10px]">
-                            {t.category && <span className="bg-white px-2.5 py-1.5 rounded-lg border border-slate-200 font-bold text-slate-600 shadow-sm">{t.category}</span>}
-                            <span className="bg-white px-2.5 py-1.5 rounded-lg border border-slate-200 font-bold text-slate-600 shadow-sm">Qty: {t.quantity}</span>
-                            <span className="bg-white px-2.5 py-1.5 rounded-lg border border-slate-200 font-bold text-slate-600 shadow-sm">Price: ₹{t.price}</span>
+                            {t.category && (
+                              <span className="bg-white px-2.5 py-1.5 rounded-lg border border-slate-200 font-bold text-slate-600 shadow-sm">
+                                {t.category}
+                              </span>
+                            )}
+                            <span className="bg-white px-2.5 py-1.5 rounded-lg border border-slate-200 font-bold text-slate-600 shadow-sm">
+                              Qty: {t.quantity}
+                            </span>
+                            <span className="bg-white px-2.5 py-1.5 rounded-lg border border-slate-200 font-bold text-slate-600 shadow-sm">
+                              Price: ₹{t.price}
+                            </span>
                           </div>
                         </div>
                       ))}
                       <div className="mt-4 flex flex-col gap-2 p-4 bg-orange-50 rounded-2xl border border-orange-100">
                         <div className="flex justify-between text-sm font-bold text-slate-700">
-                           <span>Total Amount:</span>
-                           <span>₹{selectedRecordDetails.totalAmount || selectedRecordDetails.grandTotal}</span>
+                          <span>Total Amount:</span>
+                          <span>
+                            ₹
+                            {selectedRecordDetails.totalAmount ||
+                              selectedRecordDetails.grandTotal}
+                          </span>
                         </div>
                         <div className="flex justify-between text-sm font-bold text-slate-700">
-                           <span>Paid Amount:</span>
-                           <span>₹{selectedRecordDetails.paidAmount || selectedRecordDetails.amountReceived || (Number(selectedRecordDetails.grandTotal || 0) - Number(selectedRecordDetails.balanceAmount || 0))}</span>
+                          <span>Paid Amount:</span>
+                          <span>
+                            ₹
+                            {selectedRecordDetails.paidAmount ||
+                              selectedRecordDetails.amountReceived ||
+                              Number(selectedRecordDetails.grandTotal || 0) -
+                                Number(
+                                  selectedRecordDetails.balanceAmount || 0,
+                                )}
+                          </span>
                         </div>
                         <div className="flex justify-between text-sm font-bold text-orange-600">
-                           <span>Balance Amount:</span>
-                           <span>₹{selectedRecordDetails.balanceAmount || 0}</span>
+                          <span>Balance Amount:</span>
+                          <span>
+                            ₹{selectedRecordDetails.balanceAmount || 0}
+                          </span>
                         </div>
                       </div>
                     </div>
                   </div>
                 )}
-                
-                {/* Documents / PDF */}
-                {(() => {
-                  let fileUrl = selectedRecordDetails.finalReportFileUrl || 
-                               (selectedRecordDetails.finalReportFileUrls && selectedRecordDetails.finalReportFileUrls[0]) || 
-                               selectedRecordDetails.fileUrl || 
-                               selectedRecordDetails.documentPath;
-                  
-                  if (!fileUrl) return null;
-                  
-                  const cleanUrl = fileUrl.replace(/^\/upload\//, '/uploads/');
-                  const isLocal = window?.location?.hostname === "localhost" || window?.location?.hostname === "127.0.0.1";
-                  const baseUrl = isLocal 
-                    ? (selectedRecordDetails._subdomain === 'demo2' ? 'http://localhost:4026' : 'http://localhost:3026') 
-                    : `https://${selectedRecordDetails._subdomain || 'demo'}.physicianhealthnet.com/api`;
-                  const url = cleanUrl.startsWith('http') ? cleanUrl : `${baseUrl}${cleanUrl}`;
-                  
-                  return (
-                    <div>
-                      <h3 className="text-sm font-black uppercase tracking-wider text-slate-800 mb-4 flex items-center gap-2">
-                        <Icon icon="solar:document-text-bold-duotone" className="text-rose-500" width={18} />
-                        Attached Document
-                      </h3>
-                      <div className="bg-rose-50/50 p-5 rounded-2xl border border-rose-100 flex items-center justify-between shadow-sm">
-                        <div className="flex items-center gap-4">
-                           <div className="w-12 h-12 rounded-xl bg-white border border-rose-100 flex items-center justify-center text-rose-500 shadow-sm">
-                              <Icon icon="solar:file-download-bold-duotone" width="28" />
-                           </div>
-                           <div className="flex flex-col">
-                             <span className="font-bold text-slate-800 text-sm">Medical Report Document</span>
-                             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-0.5">PDF / Image</span>
-                           </div>
+
+              {/* Documents / PDF */}
+              {(() => {
+                let fileUrl =
+                  selectedRecordDetails.finalReportFileUrl ||
+                  (selectedRecordDetails.finalReportFileUrls &&
+                    selectedRecordDetails.finalReportFileUrls[0]) ||
+                  selectedRecordDetails.fileUrl ||
+                  selectedRecordDetails.documentPath;
+
+                if (!fileUrl) return null;
+
+                const cleanUrl = fileUrl.replace(/^\/upload\//, "/uploads/");
+                const isLocal =
+                  window?.location?.hostname === "localhost" ||
+                  window?.location?.hostname === "127.0.0.1";
+                const baseUrl = isLocal
+                  ? selectedRecordDetails._subdomain === "demo2"
+                    ? "http://localhost:4026"
+                    : "http://localhost:3026"
+                  : `https://${selectedRecordDetails._subdomain || "demo"}.physicianhealthnet.com/api`;
+                const url = cleanUrl.startsWith("http")
+                  ? cleanUrl
+                  : `${baseUrl}${cleanUrl}`;
+
+                return (
+                  <div>
+                    <h3 className="text-sm font-black uppercase tracking-wider text-slate-800 mb-4 flex items-center gap-2">
+                      <Icon
+                        icon="solar:document-text-bold-duotone"
+                        className="text-rose-500"
+                        width={18}
+                      />
+                      Attached Document
+                    </h3>
+                    <div className="bg-rose-50/50 p-5 rounded-2xl border border-rose-100 flex items-center justify-between shadow-sm">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-xl bg-white border border-rose-100 flex items-center justify-center text-rose-500 shadow-sm">
+                          <Icon
+                            icon="solar:file-download-bold-duotone"
+                            width="28"
+                          />
                         </div>
-                        <a 
-                          href={url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="bg-rose-500 hover:bg-rose-600 text-white px-5 py-2.5 rounded-xl font-bold text-xs transition-colors shadow-md shadow-rose-200/50 flex items-center gap-2"
-                        >
-                          View Document
-                          <Icon icon="solar:export-bold-duotone" />
-                        </a>
+                        <div className="flex flex-col">
+                          <span className="font-bold text-slate-800 text-sm">
+                            Medical Report Document
+                          </span>
+                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-0.5">
+                            PDF / Image
+                          </span>
+                        </div>
                       </div>
+                      <a
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-rose-500 hover:bg-rose-600 text-white px-5 py-2.5 rounded-xl font-bold text-xs transition-colors shadow-md shadow-rose-200/50 flex items-center gap-2"
+                      >
+                        View Document
+                        <Icon icon="solar:export-bold-duotone" />
+                      </a>
                     </div>
-                  );
-                })()}
-                
-                {/* If no meds, no doc, and no treatments */}
-                {selectedRecordDetails._type !== 'bill' && (!selectedRecordDetails.medicinesData || selectedRecordDetails.medicinesData.length === 0) && !selectedRecordDetails.finalReportFileUrl && !selectedRecordDetails.finalReportFileUrls && !selectedRecordDetails.fileUrl && !selectedRecordDetails.documentPath && (
-                   <div className="flex flex-col items-center justify-center py-16 text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200 mt-4">
-                     <Icon icon="solar:ghost-smile-bold-duotone" className="text-6xl mb-4 opacity-40" />
-                     <span className="font-bold text-sm tracking-widest uppercase text-slate-500">No Data Available</span>
-                     <span className="text-xs text-slate-400 mt-2 font-medium max-w-[250px] text-center">There is no data attached to this record.</span>
-                   </div>
+                  </div>
+                );
+              })()}
+
+              {/* If no meds, no doc, and no treatments */}
+              {selectedRecordDetails._type !== "bill" &&
+                (!selectedRecordDetails.medicinesData ||
+                  selectedRecordDetails.medicinesData.length === 0) &&
+                !selectedRecordDetails.finalReportFileUrl &&
+                !selectedRecordDetails.finalReportFileUrls &&
+                !selectedRecordDetails.fileUrl &&
+                !selectedRecordDetails.documentPath && (
+                  <div className="flex flex-col items-center justify-center py-16 text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200 mt-4">
+                    <Icon
+                      icon="solar:ghost-smile-bold-duotone"
+                      className="text-6xl mb-4 opacity-40"
+                    />
+                    <span className="font-bold text-sm tracking-widest uppercase text-slate-500">
+                      No Data Available
+                    </span>
+                    <span className="text-xs text-slate-400 mt-2 font-medium max-w-[250px] text-center">
+                      There is no data attached to this record.
+                    </span>
+                  </div>
                 )}
-                
-                {selectedRecordDetails._type === 'bill' && (!selectedRecordDetails.treatments || selectedRecordDetails.treatments.length === 0) && (
-                   <div className="flex flex-col items-center justify-center py-16 text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200 mt-4">
-                     <Icon icon="solar:ghost-smile-bold-duotone" className="text-6xl mb-4 opacity-40" />
-                     <span className="font-bold text-sm tracking-widest uppercase text-slate-500">No Treatments</span>
-                     <span className="text-xs text-slate-400 mt-2 font-medium max-w-[250px] text-center">There are no treatments found for this bill.</span>
-                   </div>
+
+              {selectedRecordDetails._type === "bill" &&
+                (!selectedRecordDetails.treatments ||
+                  selectedRecordDetails.treatments.length === 0) && (
+                  <div className="flex flex-col items-center justify-center py-16 text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200 mt-4">
+                    <Icon
+                      icon="solar:ghost-smile-bold-duotone"
+                      className="text-6xl mb-4 opacity-40"
+                    />
+                    <span className="font-bold text-sm tracking-widest uppercase text-slate-500">
+                      No Treatments
+                    </span>
+                    <span className="text-xs text-slate-400 mt-2 font-medium max-w-[250px] text-center">
+                      There are no treatments found for this bill.
+                    </span>
+                  </div>
                 )}
-             </div>
+            </div>
           </div>
         </div>
       )}

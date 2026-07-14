@@ -62,13 +62,14 @@ export const UserSidebar = ({
     { id: "attend-clinics", label: "Attend Clinics", icon: "lucide:building-2" },
     { id: "appointments", label: "Appointments - Up Coming", icon: "lucide:calendar-days" },
     { id: "chat", label: "Chat", icon: "lucide:message-circle" },
+    { id: "clinic-support-chat", label: "Clinic Support Chat", icon: "lucide:headset" },
     { id: "prescriptions", label: "Prescriptions - Active prescriptions", icon: "lucide:pill" },
     { id: "scans", label: "Scan Reports", icon: "lucide:scan" },
     { id: "lab-tests", label: "Lab Reports", icon: "lucide:flask-conical" },
     { id: "medical-records", label: "All Records", icon: "lucide:folder-open" },
     { id: "out-of-network-data", label: "Out of Network Data", icon: "lucide:alert-triangle" },
     { id: "bills", label: "Bills & Invoices", icon: "lucide:receipt" },
-    { id: "video-consult", label: "Video Consult", icon: "lucide:video" },
+    { id: "video-consult", label: "Video Chat", icon: "lucide:video" },
     { id: "post-care", label: "Post Care & After Discharge", icon: "lucide:heart-handshake" },
   ];
 
@@ -99,7 +100,7 @@ export const UserSidebar = ({
                 }}
                 className={`
                                 relative px-6 py-[18px] cursor-pointer flex justify-between items-center transition-all duration-200 border-b border-[#f0f0f0]
-                                ${activeTab === tab.id ? "bg-[#f0f0f5]" : "hover:bg-gray-50 bg-white"}
+                                ${activeTab === tab.id ? "bg-[#14bef0]" : "hover:bg-gray-50 bg-white"}
                             `}
               >
                 {/* Active Tab Blue Indicator */}
@@ -111,11 +112,11 @@ export const UserSidebar = ({
                   {tab.icon && (
                     <Icon 
                       icon={tab.icon} 
-                      className={`text-[20px] transition-colors ${activeTab === tab.id ? "text-[#14bef0]" : "text-[#999]"}`} 
+                      className={`text-[20px] transition-colors ${activeTab === tab.id ? "text-white" : "text-[#999]"}`} 
                     />
                   )}
                   <span
-                    className={`text-[15px] ${activeTab === tab.id ? "text-[#333] font-medium" : "text-[#666]"}`}
+                    className={`text-[15px] ${activeTab === tab.id ? "text-white font-medium" : "text-[#666]"}`}
                   >
                     {tab.label}
                   </span>
@@ -132,7 +133,7 @@ export const UserSidebar = ({
                         ? "solar:alt-arrow-up-linear"
                         : "solar:alt-arrow-down-linear"
                     }
-                    className={`text-[#999] transition-transform ${activeTab === tab.id ? "text-[#14bef0]" : ""}`}
+                    className={`text-white transition-transform ${activeTab === tab.id ? "text-[#14bef0]" : ""}`}
                   />
                 ) : null}
               </li>

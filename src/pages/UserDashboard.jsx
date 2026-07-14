@@ -8,6 +8,7 @@ import Chat from "./Chat";
 import PatientDashboardOverview from "./PatientDashboardOverview";
 import VideoConsult from "./VideoConsult";
 import { ClinicAccordionView } from "./ClinicAccordionView";
+import ClinicSupportChatPage from "./ClinicSupportChatPage";
 
 export const UserDashboard = () => {
   const { tab } = useParams();
@@ -37,7 +38,7 @@ export const UserDashboard = () => {
 
       {/* Container for Main Area - Switch padding based on tab type */}
       <div
-        className={`flex-1 bg-[#f8f9fa] ${activeTab === "medical-records" || activeTab === "scans" || activeTab === "lab-tests" || activeTab === "prescriptions" || activeTab === "bills" || activeTab === "chat" || selectedClinic ? "p-0" : "p-8"} overflow-y-auto`}
+        className={`flex-1 bg-[#f8f9fa] ${activeTab === "medical-records" || activeTab === "scans" || activeTab === "lab-tests" || activeTab === "prescriptions" || activeTab === "bills" || activeTab === "chat" || activeTab === "clinic-support-chat" || selectedClinic ? "p-0" : "p-8"} overflow-y-auto`}
       >
         {selectedClinic ? (
           <div className="pt-8 min-h-full">
@@ -53,6 +54,7 @@ export const UserDashboard = () => {
               activeTab !== "bills" &&
               activeTab !== "video-consult" &&
               activeTab !== "chat" &&
+              activeTab !== "clinic-support-chat" &&
               activeTab !== "dashboard" && (
                 <div className="flex flex-row items-center gap-[15px] mb-12">
                   <div className="w-[50px] h-[50px] bg-[#e6e6e6] rounded-sm flex items-center justify-center text-gray-400">
@@ -98,6 +100,8 @@ export const UserDashboard = () => {
 
             {activeTab === "chat" && <Chat />}
 
+            {activeTab === "clinic-support-chat" && <ClinicSupportChatPage />}
+
             {activeTab === "video-consult" && <VideoConsult />}
 
             {activeTab === "attend-clinics" && !selectedClinic && (
@@ -117,6 +121,7 @@ export const UserDashboard = () => {
               activeTab !== "lab-tests" &&
               activeTab !== "bills" &&
               activeTab !== "chat" &&
+              activeTab !== "clinic-support-chat" &&
               activeTab !== "video-consult" &&
               activeTab !== "attend-clinics" && (
                 <div className="flex flex-col items-center justify-center mt-[100px]">

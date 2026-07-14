@@ -27,7 +27,7 @@ const VideoConsult = () => {
   const [patientConcerns, setPatientConcerns] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
-  const [selectedSpecialty, setSelectedSpecialty] = useState("");
+  const [selectedSpecialty, setSelectedSpecialty] = useState(() => sessionStorage.getItem("patientDepartment") || "");
   
   const [requestSubmitting, setRequestSubmitting] = useState(false);
   const [requestError, setRequestError] = useState("");
@@ -36,6 +36,132 @@ const VideoConsult = () => {
   // Accordion states
   const [upcomingOpen, setUpcomingOpen] = useState(true);
   const [historyOpen, setHistoryOpen] = useState(false);
+
+  // Location & Department Modal states
+  const [showLocationModal, setShowLocationModal] = useState(() => !sessionStorage.getItem("patientLocation"));
+  const [tempLocation, setTempLocation] = useState(sessionStorage.getItem("patientLocation") || "");
+  const [tempDepartment, setTempDepartment] = useState(sessionStorage.getItem("patientDepartment") || "");
+  
+  const filterRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (filterRef.current && !filterRef.current.contains(event.target)) {
+        setShowFilters(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    if (showLocationModal || showFilters) {
+      setTempLocation(sessionStorage.getItem("patientLocation") || "");
+      setTempDepartment(sessionStorage.getItem("patientDepartment") || "");
+    }
+  }, [showLocationModal, showFilters]);
+  
+  const uniqueLocations = React.useMemo(() => {
+    const locations = new Set();
+    doctorsData.forEach(d => {
+      if (d.address) {
+        const parts = d.address.split(",");
+        const area = parts[parts.length - 1].trim();
+        if (area) locations.add(area);
+      }
+    });
+    return Array.from(locations).sort();
+  }, []);
+
+  const { localDepartments, otherDepartments } = React.useMemo(() => {
+    const local = new Set();
+    const other = new Set();
+    doctorsData.forEach(d => {
+      if (!d.specialization) return;
+      const area = d.address ? d.address.split(",").pop().trim() : "";
+      if (tempLocation && area === tempLocation) {
+        local.add(d.specialization);
+      } else {
+        other.add(d.specialization);
+      }
+    });
+    
+    local.forEach(dep => other.delete(dep));
+    
+    return {
+      localDepartments: Array.from(local).sort(),
+      otherDepartments: Array.from(other).sort()
+    };
+  }, [tempLocation]);
+
+  const handleApplyFilters = () => {
+    if (tempLocation) {
+      sessionStorage.setItem("patientLocation", tempLocation);
+    } else {
+      sessionStorage.removeItem("patientLocation");
+    }
+    
+    if (tempDepartment) {
+      sessionStorage.setItem("patientDepartment", tempDepartment);
+      setSelectedSpecialty(tempDepartment);
+    } else {
+      sessionStorage.removeItem("patientDepartment");
+      setSelectedSpecialty("");
+    }
+    
+    setShowLocationModal(false);
+    setShowFilters(false);
+  };
+
+  const FilterContent = () => (
+    <div className="flex flex-col gap-4">
+      <div>
+        <label className="text-[10px] font-black uppercase text-slate-400 mb-1.5 block tracking-wider">Location</label>
+        <select 
+          className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 outline-none focus:border-indigo-500 cursor-pointer"
+          value={tempLocation}
+          onChange={(e) => setTempLocation(e.target.value)}
+        >
+          <option value="">All Locations</option>
+          {uniqueLocations.map(loc => (
+            <option key={loc} value={loc}>{loc}</option>
+          ))}
+        </select>
+      </div>
+      <div>
+        <label className="text-[10px] font-black uppercase text-slate-400 mb-1.5 block tracking-wider">Specialty</label>
+        <select 
+          className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 outline-none focus:border-indigo-500 cursor-pointer"
+          value={tempDepartment}
+          onChange={(e) => setTempDepartment(e.target.value)}
+        >
+          <option value="">All Specialties</option>
+          {tempLocation ? (
+            <>
+              {localDepartments.length > 0 && (
+                <optgroup label={`${tempLocation} Specialties`}>
+                  {localDepartments.map(dep => <option key={dep} value={dep}>{dep}</option>)}
+                </optgroup>
+              )}
+              {otherDepartments.length > 0 && (
+                <optgroup label="Other Specialties">
+                  {otherDepartments.map(dep => <option key={dep} value={dep}>{dep}</option>)}
+                </optgroup>
+              )}
+            </>
+          ) : (
+            otherDepartments.map(dep => <option key={dep} value={dep}>{dep}</option>)
+          )}
+        </select>
+      </div>
+      <button 
+        onClick={handleApplyFilters}
+        className="w-full py-2.5 bg-[#4338ca] hover:bg-indigo-700 text-white font-bold rounded-lg transition-colors mt-2 shadow-md shadow-indigo-500/20 border-none cursor-pointer"
+      >
+        Apply Filters
+      </button>
+    </div>
+  );
 
   // Retrieve patient details from session storage
   const userStr = sessionStorage.getItem("userData");
@@ -103,6 +229,7 @@ const VideoConsult = () => {
               number: doc.phone || "N/A",
               fee: doc.fee || 20,
               photo: doc.clinic_image || null,
+              area: doc.address ? doc.address.split(",").pop().trim() : "",
             });
           }
         }
@@ -222,6 +349,12 @@ const VideoConsult = () => {
                           doc.department?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesSpecialty = selectedSpecialty ? doc.department === selectedSpecialty : true;
     return matchesSearch && matchesSpecialty;
+  }).sort((a, b) => {
+    const patientLoc = sessionStorage.getItem("patientLocation");
+    if (!patientLoc) return 0;
+    const aMatch = a.area === patientLoc ? 1 : 0;
+    const bMatch = b.area === patientLoc ? 1 : 0;
+    return bMatch - aMatch;
   });
 
   const specialties = [...new Set(doctors.map(d => d.department))].filter(Boolean);
@@ -388,6 +521,7 @@ const VideoConsult = () => {
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="text-lg font-bold text-slate-800 m-0">Available Doctors</h2>
                   <div className="flex items-center gap-3">
+
                     <div className="relative">
                       <Icon icon="solar:magnifer-linear" className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                       <input 
@@ -398,7 +532,7 @@ const VideoConsult = () => {
                         className="pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-full text-xs font-semibold focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 w-48 transition-all"
                       />
                     </div>
-                    <div className="relative">
+                    <div className="relative" ref={filterRef}>
                       <button 
                         onClick={() => setShowFilters(!showFilters)}
                         className={`flex items-center gap-1.5 px-3 py-2 border rounded-full text-xs font-bold cursor-pointer transition-all ${showFilters || selectedSpecialty ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
@@ -408,25 +542,8 @@ const VideoConsult = () => {
                       </button>
                       
                       {showFilters && (
-                        <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-100 p-2 z-10 animate-in fade-in zoom-in-95 duration-200">
-                          <h4 className="text-[10px] font-black uppercase text-slate-400 mb-2 px-2 tracking-wider">Specialty</h4>
-                          <div className="max-h-48 overflow-y-auto custom-scrollbar flex flex-col gap-1">
-                            <button 
-                              onClick={() => { setSelectedSpecialty(""); setShowFilters(false); }}
-                              className={`text-left px-3 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer border-none ${!selectedSpecialty ? 'bg-indigo-50 text-indigo-700' : 'bg-transparent text-slate-600 hover:bg-slate-50'}`}
-                            >
-                              All Specialties
-                            </button>
-                            {specialties.map(spec => (
-                              <button 
-                                key={spec}
-                                onClick={() => { setSelectedSpecialty(spec); setShowFilters(false); }}
-                                className={`text-left px-3 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer border-none ${selectedSpecialty === spec ? 'bg-indigo-50 text-indigo-700' : 'bg-transparent text-slate-600 hover:bg-slate-50'}`}
-                              >
-                                {spec}
-                              </button>
-                            ))}
-                          </div>
+                        <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-xl shadow-lg border border-slate-100 p-4 z-10 animate-in fade-in zoom-in-95 duration-200 text-left">
+                          <FilterContent />
                         </div>
                       )}
                     </div>
@@ -440,9 +557,20 @@ const VideoConsult = () => {
                       <span className="text-xs font-bold">Loading Doctors...</span>
                     </div>
                   ) : filteredDoctors.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 pb-4">
-                      {filteredDoctors.map(doc => {
-                        const isSelected = selectedDoctor?._id === doc._id;
+                    <>
+                      {sessionStorage.getItem("patientLocation") && 
+                       filteredDoctors.filter(d => d.area === sessionStorage.getItem("patientLocation")).length === 0 && (
+                        <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3 shadow-sm">
+                          <Icon icon="solar:info-circle-bold-duotone" className="text-amber-500 text-xl shrink-0 mt-0.5" />
+                          <div>
+                            <p className="text-sm font-bold text-amber-800 m-0">No exact matches in {sessionStorage.getItem("patientLocation")}</p>
+                            <p className="text-xs text-amber-700 m-0 mt-0.5">Showing specialized doctors from other available locations below.</p>
+                          </div>
+                        </div>
+                      )}
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 pb-4">
+                        {filteredDoctors.map(doc => {
+                          const isSelected = selectedDoctor?._id === doc._id;
                         return (
                           <div 
                             key={doc._id} 
@@ -470,6 +598,16 @@ const VideoConsult = () => {
                                   <Icon icon="solar:hospital-linear" />
                                   {doc.hospital}
                                 </div>
+                                {doc.area && (
+                                  <div className={`flex items-center gap-1 text-[11px] mt-1 ${
+                                    sessionStorage.getItem("patientLocation") === doc.area 
+                                      ? 'text-indigo-600 font-bold' 
+                                      : 'text-slate-500'
+                                  }`}>
+                                    <Icon icon="solar:map-point-linear" />
+                                    {doc.area}
+                                  </div>
+                                )}
                                 <div className="flex items-center justify-between mt-1">
                                   <div className="flex items-center gap-1 text-[11px] font-bold text-slate-700">
                                     <Icon icon="solar:wallet-money-linear" className="text-emerald-500" />
@@ -502,7 +640,8 @@ const VideoConsult = () => {
                         );
                       })}
                     </div>
-                  ) : (
+                  </>
+                ) : (
                     <div className="flex flex-col items-center justify-center h-full text-slate-400">
                       <Icon icon="solar:users-group-two-rounded-linear" className="text-4xl text-indigo-300 mb-2" />
                       <span className="text-sm font-bold text-slate-500">No doctors available.</span>
@@ -771,6 +910,34 @@ const VideoConsult = () => {
         </div>
       </div>
       
+      {/* Location & Department Modal */}
+      {showLocationModal && (
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm"
+          onClick={() => setShowLocationModal(false)}
+        >
+          <div 
+            className="bg-white rounded-2xl w-full max-w-sm shadow-xl overflow-hidden flex flex-col transition-all"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6 pb-4 border-b border-slate-100 flex justify-between items-center bg-linear-to-r from-blue-600 to-indigo-700 text-white">
+              <div>
+                <h3 className="font-bold text-lg">
+                  Find Doctors
+                </h3>
+                <p className="text-xs text-blue-100 mt-1">
+                  Select your location and specialty
+                </p>
+              </div>
+            </div>
+            
+            <div className="p-6">
+              <FilterContent />
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Global styling for scrollbar */}
       <style>{`
         .custom-scrollbar::-webkit-scrollbar {

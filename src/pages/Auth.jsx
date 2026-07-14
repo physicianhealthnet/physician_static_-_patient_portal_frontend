@@ -67,7 +67,7 @@ function Auth({ initialTab = "login" }) {
           if (remember) localStorage.setItem("userData", JSON.stringify(res.data.user));
         }
 
-        navigate("/dashboard/attend-clinics");
+        navigate("/dashboard/dashboard");
       } else {
         setPasswordError("Authentication failed: No token received.");
       }
