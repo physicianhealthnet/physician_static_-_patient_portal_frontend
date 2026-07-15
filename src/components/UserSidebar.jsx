@@ -56,7 +56,7 @@ export const UserSidebar = ({
     }
   }, [activeTab, clinics]); // Remove selectedClinic from dependencies to avoid race condition when nullified
 
-  const expandableTabs = ["attend-clinics"];
+  const expandableTabs = ["attend-clinics", "forms"];
   const tabs = [
     { id: "dashboard", label: "Dashboard", icon: "lucide:layout-dashboard" },
     { id: "attend-clinics", label: "Attend Clinics", icon: "lucide:building-2" },
@@ -69,6 +69,7 @@ export const UserSidebar = ({
     { id: "medical-records", label: "All Records", icon: "lucide:folder-open" },
     { id: "out-of-network-data", label: "Out of Network Data", icon: "lucide:alert-triangle" },
     { id: "bills", label: "Bills & Invoices", icon: "lucide:receipt" },
+    { id: "forms", label: "Forms", icon: "lucide:file-text" },
     { id: "video-consult", label: "Video Chat", icon: "lucide:video" },
     { id: "post-care", label: "Post Care & After Discharge", icon: "lucide:heart-handshake" },
   ];
@@ -87,12 +88,12 @@ export const UserSidebar = ({
             <React.Fragment key={tab.id}>
               <li
                 onClick={() => {
-                  if (tab.id === "attend-clinics") {
+                  if (expandableTabs.includes(tab.id)) {
                      // Toggle expandable behavior
-                     if (activeTab === "attend-clinics") {
+                     if (activeTab === tab.id) {
                        setActiveTab("dashboard");
                      } else {
-                       setActiveTab("attend-clinics");
+                       setActiveTab(tab.id);
                      }
                   } else {
                      setActiveTab(tab.id);
@@ -139,7 +140,7 @@ export const UserSidebar = ({
               </li>
 
               {/* Sub Menu for Clinics */}
-              {isExpanded && clinics.length > 0 && (
+              {isExpanded && tab.id === "attend-clinics" && clinics.length > 0 && (
                 <div className="bg-[#f8f9fa] border-b border-[#f0f0f0] animate-in slide-in-from-top-2 fade-in duration-200">
                   <ul className="flex flex-col py-2">
                     <li className="px-10 py-2 text-[10px] font-black text-gray-400 uppercase tracking-widest">
@@ -163,6 +164,35 @@ export const UserSidebar = ({
                           />
                           <span className="line-clamp-1">
                             {clinic.clinic_name}
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              )}
+
+              {/* Sub Menu for Forms */}
+              {isExpanded && tab.id === "forms" && (
+                <div className="bg-[#f8f9fa] border-b border-[#f0f0f0] animate-in slide-in-from-top-2 fade-in duration-200">
+                  <ul className="flex flex-col py-2">
+                    <li className="px-10 py-2 text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                      Documents
+                    </li>
+                    {["Medical Certificates", "Consent Form", "Other Forms"].map((formName) => {
+                      return (
+                        <li
+                          key={formName}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                          }}
+                          className={`px-10 py-2.5 cursor-pointer text-[13px] transition-colors flex items-center gap-2 font-medium text-gray-600 hover:text-[#14bef0] hover:bg-white`}
+                        >
+                          <div
+                            className={`w-1.5 h-1.5 rounded-full shrink-0 bg-[#14bef0]/50`}
+                          />
+                          <span className="line-clamp-1">
+                            {formName}
                           </span>
                         </li>
                       );
