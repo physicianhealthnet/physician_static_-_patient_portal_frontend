@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { Icon } from "@iconify/react";
 import { useNavigate } from "react-router-dom";
 import useUserLocation from "../hooks/useUserLocation";
-import doctorsDataJson from "../data/doctorsData.json";
+import { fetchDoctorsDataFromDb } from "../utilities/dataLoader.js";
 
 export function DualSearchInput() {
   const navigate = useNavigate();
@@ -27,13 +27,15 @@ export function DualSearchInput() {
   }, [detectedCity]);
 
   useEffect(() => {
-    try {
-      if (doctorsDataJson) {
-        setDoctors(doctorsDataJson);
+    const loadDoctors = async () => {
+      try {
+        const data = await fetchDoctorsDataFromDb();
+        setDoctors(data);
+      } catch (error) {
+        console.error("Error loading doctors data:", error);
       }
-    } catch (error) {
-      console.error("Error loading doctors data:", error);
-    }
+    };
+    loadDoctors();
   }, []);
 
   useEffect(() => {

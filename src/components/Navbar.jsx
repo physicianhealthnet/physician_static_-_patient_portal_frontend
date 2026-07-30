@@ -3,6 +3,7 @@ import { LoginButton } from "./Buttons";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import FindDoctorModal from "./FindDoctorModal";
+import Cookies from "js-cookie";
 
 export const HomeNavBar = () => {
   const [openSubMenu, setOpenSubMenu] = useState(false);
@@ -31,6 +32,11 @@ export const HomeNavBar = () => {
 
   const handleLogout = () => {
     sessionStorage.clear();
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    localStorage.removeItem("patientData");
+    localStorage.removeItem("userData");
+    Cookies.remove("token");
     navigate("/");
     window.location.reload();
   };
@@ -276,6 +282,11 @@ const SubMenu = ({ point, type, onClose }) => {
   
   const handleLogout = () => {
     sessionStorage.clear();
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    localStorage.removeItem("patientData");
+    localStorage.removeItem("userData");
+    Cookies.remove("token");
     navigate("/");
     window.location.reload();
   };

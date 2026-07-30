@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Icon } from "@iconify/react";
+import { io } from "socket.io-client";
 import {
   AxiosInstanceSecondryServer,
   AxiosInstanceDependency,
 } from "../utilities/AxiosInstance";
 import dayjs from "dayjs";
-import doctorsData from "../data/doctorsData.json";
+import { fetchDoctorsDataFromDb } from "../utilities/dataLoader.js";
 import AIGaugeReport from "../components/AIGaugeReport";
 import { AIReportModal } from "../components/AIReportModal";
 import {
@@ -68,30 +69,40 @@ const PatientDashboardOverview = () => {
   console.log(appointments, "appointments");
 
   const patientClinicId = React.useMemo(() => userP?.clinicIds || [], [userP]);
+  console.log(patientClinicId, "patientClinicId");
 
   // Resolve subdomains
   useEffect(() => {
     if (!patientClinicId.length) return;
-    const clinics = doctorsData.filter((d) => patientClinicId.includes(d.cid));
-    const resolvedMap = new Map();
-    clinics.forEach((clinic) => {
-      if (!resolvedMap.has(clinic.cid)) {
-        resolvedMap.set(clinic.cid, {
-          cid: clinic.cid,
-          clinic_name: clinic.clinic_name,
-          subdomain:
-            clinic.subdomain_name ||
-            clinic.clinic_name.toLowerCase().replace(/\s+/g, "-"),
-          address: clinic.address || "",
-          phone: clinic.phone || "",
+    const loadClinics = async () => {
+      try {
+        const doctorsData = await fetchDoctorsDataFromDb();
+        const clinics = doctorsData.filter((d) => patientClinicId.includes(d.cid));
+        const resolvedMap = new Map();
+        clinics.forEach((clinic) => {
+          if (!resolvedMap.has(clinic.cid)) {
+            resolvedMap.set(clinic.cid, {
+              cid: clinic.cid,
+              clinic_name: clinic.clinic_name,
+              subdomain:
+                clinic.subdomain_name ||
+                clinic.clinic_name.toLowerCase().replace(/\s+/g, "-"),
+              address: clinic.address || "",
+              phone: clinic.phone || "",
+            });
+          }
         });
+        const resolved = Array.from(resolvedMap.values());
+        
+        setClinicIdResolvedData((prev) => {
+          if (JSON.stringify(prev) === JSON.stringify(resolved)) return prev;
+          return resolved;
+        });
+      } catch (err) {
+        console.error(err);
       }
-    });
-    const resolved = Array.from(resolvedMap.values());
-    setClinicIdResolvedData((prev) => {
-      if (JSON.stringify(prev) === JSON.stringify(resolved)) return prev;
-      return resolved;
-    });
+    };
+    loadClinics();
   }, [patientClinicId]);
 
   const fetchPrescriptions = React.useCallback(async () => {
@@ -204,6 +215,71 @@ const PatientDashboardOverview = () => {
       console.error("Prescriptions fetch error", error);
     }
   }, [id, clinicIdResolvedData]);
+
+  useEffect(() => {
+    let patientData = null;
+    let uData = null;
+    try {
+      patientData = JSON.parse(sessionStorage.getItem("patientData") || "{}");
+    } catch (e) {}
+    try {
+      uData = JSON.parse(sessionStorage.getItem("userData") || "{}");
+    } catch (e) {}
+
+    const patientId = patientData?.patientId || uData?.patientId;
+    const clinicId = patientData?.clinicId || uData?.clinicId || "PHN-C-0001";
+    const patientName = patientData?.patientName || uData?.name || "Patient";
+
+    if (!patientId) return;
+
+    const isLocalEnv = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+    const SOCKET_URL = isLocalEnv
+      ? "http://localhost:3028"
+      : "https://dependencyforphn.physicianhealthnet.com";
+
+    console.log(`[PatientDashboardOverview] Connecting to Socket: ${SOCKET_URL} for patient: ${patientId}`);
+
+    const socket = io(SOCKET_URL, {
+      auth: {
+        userType: "patient",
+        clinicId,
+        patientId,
+        patientName,
+      },
+      transports: ["websocket", "polling"],
+    });
+
+    socket.on("connect", () => {
+      console.log("[PatientDashboardOverview] Connected to socket for live updates");
+    });
+
+    socket.on("vitals:updated", (data) => {
+      console.log("[PatientDashboardOverview] Live vitals received:", data);
+      if (data.patientId === patientId && data.vitals) {
+        setVitalsHistory((prev) => {
+          const newVital = {
+            ...data.vitals,
+            date: data.vitals.date || new Date().toLocaleString(),
+          };
+          const exists = prev.some((v) => v.date === newVital.date);
+          if (exists) return prev;
+          const updated = [...prev, newVital];
+          return updated.sort((a, b) => new Date(a.date) - new Date(b.date));
+        });
+      }
+    });
+
+    socket.on("data:updated", (payload) => {
+      console.log("[PatientDashboardOverview] Live data:updated received:", payload);
+      if (payload.patientId === patientId || payload.patientId === id) {
+        fetchPrescriptions();
+      }
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [id, fetchPrescriptions]);
 
   const handlePrintBill = (bill) => {
     const printContent = `
@@ -564,7 +640,7 @@ const PatientDashboardOverview = () => {
             Welcome to your health command center. Here you can track your
             appointments, chat with doctors, and view your digital records.
           </p>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mt-6">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-x-3 gap-y-10 mt-6">
             {[
               {
                 label: "Book an Appointment",

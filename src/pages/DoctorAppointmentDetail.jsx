@@ -3,7 +3,7 @@ import { Icon } from "@iconify/react";
 import { useNavigate, useParams } from "react-router-dom";
 import { AxiosInstanceSecondryServer } from "../utilities/AxiosInstance.js";
 import { sendWhatsAppNotification } from "../utilities/whatsappNotify.js";
-import doctorsData from "../data/doctorsData.json";
+import { fetchDoctorsDataFromDb } from "../utilities/dataLoader.js";
 
 const getFilteredDates = (filter) => {
   const dates = [];
@@ -508,12 +508,14 @@ function DoctorAppointmentDetail() {
 
   const getDoctorDetails = async () => {
     try {
-      const doctor = doctorsData.find((d) => d.cid === cid);
+      const list = await fetchDoctorsDataFromDb();
+      const doctor = list.find((d) => d.cid === cid);
       if (doctor) {
         setTargetedDoctor(doctor);
         // Fetch doctors list as soon as clinic data is available
-        if (doctor.subdomainName) {
-          fetchDoctorsList(doctor.subdomainName);
+        const subName = doctor.subdomain_name || doctor.subdomainName;
+        if (subName) {
+          fetchDoctorsList(subName);
         }
       } else {
         setTargetedDoctor({});

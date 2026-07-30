@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Icon } from "@iconify/react";
-import doctorsDataJson from "../data/doctorsData.json";
+import { fetchDoctorsDataFromDb } from "../utilities/dataLoader.js";
 import SEO from "../components/SEO";
 
 function FindClinics() {
@@ -21,7 +21,7 @@ function FindClinics() {
     const fetchClinics = async () => {
       setLoading(true);
       try {
-        const data = doctorsDataJson || [];
+        const data = await fetchDoctorsDataFromDb();
 
         const filtered = data
           .map((doc) => {

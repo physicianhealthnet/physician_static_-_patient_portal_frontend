@@ -1,12 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Icon } from "@iconify/react";
 import dayjs from "dayjs";
-import doctorsData from "../data/doctorsData.json";
+import { fetchDoctorsDataFromDb } from "../utilities/dataLoader.js";
 
-const getRecordContact = (record) => {
+const getRecordContact = (record, doctorsList) => {
   const cName = record._clinicName || record.clinicName;
-  if (cName) {
-    const doc = doctorsData.find((d) => d.clinic_name === cName);
+  if (cName && doctorsList) {
+    const doc = doctorsList.find((d) => d.clinic_name === cName);
     if (doc && doc.phone) return doc.phone;
   }
   if (record.phone) return record.phone;
@@ -20,7 +20,12 @@ export const PrescriptionsView = ({
   setSelectedReportNotes 
 }) => {
   const now = new Date();
+  const [doctorsList, setDoctorsList] = useState([]);
   const [activeOpen, setActiveOpen] = useState(false);
+
+  useEffect(() => {
+    fetchDoctorsDataFromDb().then(setDoctorsList).catch(err => console.error(err));
+  }, []);
   const [refillOpen, setRefillOpen] = useState(false);
   const [oldOpen, setOldOpen] = useState(false);
 
@@ -156,7 +161,7 @@ const renderTable = (title, data, isRefillTable = false, isOpen, toggleOpen, { i
                       </td>
                       <td className="px-6 py-4 text-center">
                         {(() => {
-                          const contact = getRecordContact(record);
+                          const contact = getRecordContact(record, doctorsList);
                           if (contact && contact !== "N/A") {
                             return (
                               <div className="flex items-center justify-center gap-2">

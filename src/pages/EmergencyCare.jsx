@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Icon } from "@iconify/react";
+import { fetchDoctorsDataFromDb } from "../utilities/dataLoader.js";
 import { AxiosInstanceSecondryServer } from "../utilities/AxiosInstance";
-import doctorsData from "../data/doctorsData.json";
 
 const EmergencyCare = ({ selectedClinic }) => {
   const [visitedOpen, setVisitedOpen] = useState(false);
@@ -14,6 +14,11 @@ const EmergencyCare = ({ selectedClinic }) => {
   const id = userData?.id;
 
   const [appointments, setAppointments] = useState([]);
+  const [doctorsList, setDoctorsList] = useState([]);
+
+  useEffect(() => {
+    fetchDoctorsDataFromDb().then(setDoctorsList).catch(err => console.error(err));
+  }, []);
 
   useEffect(() => {
     if (id) {
@@ -48,7 +53,7 @@ const EmergencyCare = ({ selectedClinic }) => {
 
   const allDoctors = useMemo(() => {
     if (!selectedClinic) return [];
-    return doctorsData
+    return doctorsList
       .filter(d => d.clinic_name === selectedClinic.clinic_name)
       .map((d, i) => ({
         id: i,
@@ -57,7 +62,7 @@ const EmergencyCare = ({ selectedClinic }) => {
         dept: d.specialization || "General Medicine",
         number: d.phone || "N/A"
       }));
-  }, [selectedClinic]);
+  }, [selectedClinic, doctorsList]);
 
   const customerCare = useMemo(() => {
     return [

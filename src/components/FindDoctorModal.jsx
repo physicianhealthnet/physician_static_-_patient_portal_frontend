@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Icon } from "@iconify/react";
 import { useNavigate } from "react-router-dom";
-import doctorsDataJson from "../data/doctorsData.json";
+import { fetchDoctorsDataFromDb } from "../utilities/dataLoader.js";
 
 export default function FindDoctorModal({ isOpen, onClose }) {
   const navigate = useNavigate();
@@ -11,29 +11,37 @@ export default function FindDoctorModal({ isOpen, onClose }) {
   const [specialties, setSpecialties] = useState([]);
 
   useEffect(() => {
-    if (doctorsDataJson) {
-      const dynamicLocations = Array.from(
-        new Set(
-          doctorsDataJson
-            .map((doc) => doc.address?.split(",").pop()?.trim())
-            .filter(Boolean),
-        ),
-      );
-      const baseLocations = ["Coimbatore", "Erode", "Karur", "Namakkal"];
-      setLocations(
-        Array.from(new Set([...baseLocations, ...dynamicLocations])).sort(),
-      );
+    const loadData = async () => {
+      try {
+        const doctorsDataJson = await fetchDoctorsDataFromDb();
+        if (doctorsDataJson) {
+          const dynamicLocations = Array.from(
+            new Set(
+              doctorsDataJson
+                .map((doc) => doc.address?.split(",").pop()?.trim())
+                .filter(Boolean),
+            ),
+          );
+          const baseLocations = ["Coimbatore", "Erode", "Karur", "Namakkal"];
+          setLocations(
+            Array.from(new Set([...baseLocations, ...dynamicLocations])).sort(),
+          );
 
-      const specs = Array.from(
-        new Set(
-          doctorsDataJson
-            .flatMap((doc) => doc.specialization?.split(",") || [])
-            .map((s) => s.trim())
-            .filter(Boolean),
-        ),
-      );
-      setSpecialties(specs.sort());
-    }
+          const specs = Array.from(
+            new Set(
+              doctorsDataJson
+                .flatMap((doc) => doc.specialization?.split(",") || [])
+                .map((s) => s.trim())
+                .filter(Boolean),
+            ),
+          );
+          setSpecialties(specs.sort());
+        }
+      } catch (error) {
+        console.error("Error loading doctors data in modal:", error);
+      }
+    };
+    loadData();
   }, []);
 
   if (!isOpen) return null;

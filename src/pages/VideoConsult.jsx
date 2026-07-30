@@ -3,7 +3,7 @@ import { useLocation } from "react-router-dom";
 import { JitsiMeeting } from '@jitsi/react-sdk';
 import { Icon } from "@iconify/react";
 import { AxiosInstanceDependency, AxiosInstanceSecondryServer } from "../utilities/AxiosInstance";
-import doctorsData from "../data/doctorsData.json";
+import { fetchDoctorsDataFromDb } from "../utilities/dataLoader.js";
 import clinicFallbackImg from "../assets/clinic.png";
 const VideoConsult = () => {
   const [meetingJoined, setMeetingJoined] = useState(false);
@@ -18,6 +18,7 @@ const VideoConsult = () => {
   // Doctors list states
   const [doctors, setDoctors] = useState([]);
   const [loadingDoctors, setLoadingDoctors] = useState(false);
+  const [doctorsList, setDoctorsList] = useState([]);
 
   // New Booking UI States
   const [activeTab, setActiveTab] = useState("book"); // 'book' or 'consultations'
@@ -63,7 +64,7 @@ const VideoConsult = () => {
   
   const uniqueLocations = React.useMemo(() => {
     const locations = new Set();
-    doctorsData.forEach(d => {
+    doctorsList.forEach(d => {
       if (d.address) {
         const parts = d.address.split(",");
         const area = parts[parts.length - 1].trim();
@@ -71,12 +72,12 @@ const VideoConsult = () => {
       }
     });
     return Array.from(locations).sort();
-  }, []);
+  }, [doctorsList]);
 
   const { localDepartments, otherDepartments } = React.useMemo(() => {
     const local = new Set();
     const other = new Set();
-    doctorsData.forEach(d => {
+    doctorsList.forEach(d => {
       if (!d.specialization) return;
       const area = d.address ? d.address.split(",").pop().trim() : "";
       if (tempLocation && area === tempLocation) {
@@ -92,7 +93,7 @@ const VideoConsult = () => {
       localDepartments: Array.from(local).sort(),
       otherDepartments: Array.from(other).sort()
     };
-  }, [tempLocation]);
+  }, [tempLocation, doctorsList]);
 
   const handleApplyFilters = () => {
     if (tempLocation) {
@@ -203,9 +204,10 @@ const VideoConsult = () => {
     }
   };
 
-  const fetchDoctors = () => {
+  const fetchDoctors = async () => {
     setLoadingDoctors(true);
     try {
+      const doctorsData = await fetchDoctorsDataFromDb();
       // Show all clinics' doctors to allow the patient to book a video consult with any available doctor
       let allDoctors = [];
       let seen = new Set();
@@ -246,6 +248,7 @@ const VideoConsult = () => {
   useEffect(() => {
     fetchScheduledMeetings();
     fetchDoctors();
+    fetchDoctorsDataFromDb().then(setDoctorsList).catch(err => console.error(err));
   }, [userPhone]);
 
   const location = useLocation();
@@ -823,7 +826,7 @@ const VideoConsult = () => {
                                                 </div>
                                                 <div className="flex flex-col">
                                                   <span className="text-sm font-bold text-slate-800">Dr. {meet.doctorName}</span>
-                                                  <span className="text-[11px] font-bold text-indigo-500 mt-0.5">{meet.clinicName || meet.hospital || (doctorsData.find(d => d.doctor_name && d.doctor_name.includes(meet.doctorName))?.clinic_name || "PHN Clinic")}</span>
+                                                  <span className="text-[11px] font-bold text-indigo-500 mt-0.5">{meet.clinicName || meet.hospital || (doctorsList.find(d => d.doctor_name && d.doctor_name.includes(meet.doctorName))?.clinic_name || "PHN Clinic")}</span>
                                                   <span className="text-[10px] font-medium text-slate-400 mt-0.5">{isUpcoming ? (isRequested ? "Requested" : "Scheduled Call") : "Past Call"}</span>
                                                 </div>
                                               </div>

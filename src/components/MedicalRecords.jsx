@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { UploadRecordsModal } from "./UploadRecordsModal";
 import { MedicalRecordDetails } from "./MedicalRecordDetails";
-import doctorsData from "../data/doctorsData.json";
+import { fetchDoctorsDataFromDb } from "../utilities/dataLoader.js";
 import { Icon } from "@iconify/react";
 import dayjs from "dayjs";
 import AIGaugeReport from "./AIGaugeReport";
@@ -35,26 +35,34 @@ export const MedicalRecords = ({
   const [clinicIdResolvedData, setClinicIdResolvedData] = useState([]);
   const [dummyRecords, setDummyRecords] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [doctorsList, setDoctorsList] = useState([]);
 
   // Resolve subdomains (ONLY ONCE)
   useEffect(() => {
     if (!patientClinicId.length) return;
+    const loadClinics = async () => {
+      try {
+        const doctorsData = await fetchDoctorsDataFromDb();
+        setDoctorsList(doctorsData);
+        const clinics = doctorsData.filter((d) => patientClinicId.includes(d.cid));
 
-    const clinics = doctorsData.filter((d) => patientClinicId.includes(d.cid));
+        const resolved = clinics.map((clinic) => ({
+          cid: clinic.cid,
+          clinic_name: clinic.clinic_name,
+          subdomain:
+            clinic.subdomain_name ||
+            clinic.clinic_name.toLowerCase().replace(/\s+/g, "-"),
+        }));
 
-    const resolved = clinics.map((clinic) => ({
-      cid: clinic.cid,
-      clinic_name: clinic.clinic_name,
-      subdomain:
-        clinic.subdomain_name ||
-        clinic.clinic_name.toLowerCase().replace(/\s+/g, "-"),
-    }));
-
-    // prevent unnecessary re-render
-    setClinicIdResolvedData((prev) => {
-      const isSame = JSON.stringify(prev) === JSON.stringify(resolved);
-      return isSame ? prev : resolved;
-    });
+        setClinicIdResolvedData((prev) => {
+          const isSame = JSON.stringify(prev) === JSON.stringify(resolved);
+          return isSame ? prev : resolved;
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    loadClinics();
   }, [patientClinicId]);
 
   // Fetch records (ONLY when needed)
@@ -219,7 +227,7 @@ export const MedicalRecords = ({
   const getRecordContact = (record) => {
     const cName = record._clinicName || record.clinicName;
     if (cName) {
-      const doc = doctorsData.find((d) => d.clinic_name === cName);
+      const doc = doctorsList.find((d) => d.clinic_name === cName);
       if (doc && doc.phone) return doc.phone;
     }
     if (record.phone) return record.phone;

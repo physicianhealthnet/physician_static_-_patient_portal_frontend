@@ -1,11 +1,13 @@
 import axios from "axios";
 import Cookies from "js-cookie";
-const AxiosInstanceSecondryServer = axios.create({
-  baseURL: "https://phnappointment.physicianhealthnet.com/api/"
-  // baseURL: "http://localhost:3027/"
-});
 
 const isLocal = window?.location?.hostname === "localhost" || window?.location?.hostname === "127.0.0.1";
+
+const AxiosInstanceSecondryServer = axios.create({
+  baseURL: isLocal
+    ? "http://localhost:3028/"
+    : "https://phnappointment.physicianhealthnet.com/api/"
+});
 
 const AxiosInstanceDependency = axios.create({
   baseURL: isLocal

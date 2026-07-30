@@ -36,7 +36,7 @@ import heartV2 from "../assets/heart_v2.png";
 import depressionV2 from "../assets/depression_v2.png";
 import clinicFallbackImg from "../assets/clinic.png";
 import { scroll } from "../functions/Scroll.js";
-import doctorsDataJson from "../data/doctorsData.json";
+import { fetchDoctorsDataFromDb } from "../utilities/dataLoader.js";
 
 // Clinic images removed — using API data now
 const homeData = [
@@ -287,13 +287,15 @@ function Home() {
 
   // Fetch clinics from API
   useEffect(() => {
-    try {
-      if (doctorsDataJson) {
-        setClinics(doctorsDataJson);
+    const loadClinics = async () => {
+      try {
+        const data = await fetchDoctorsDataFromDb();
+        setClinics(data);
+      } catch (error) {
+        console.error("Error loading clinics:", error);
       }
-    } catch (error) {
-      console.error("Error loading clinics:", error);
-    }
+    };
+    loadClinics();
   }, []);
 
   // Auto-scroll nearby clinics carousel at constant speed with seamless loop

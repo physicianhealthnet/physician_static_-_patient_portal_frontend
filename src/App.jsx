@@ -36,6 +36,8 @@ import ContactUs from "./pages/ContactUs";
 import UserDashboard from "./pages/UserDashboard";
 import DoctorAppointmentDetail from "./pages/DoctorAppointmentDetail";
 import FindClinics from "./pages/FindClinics";
+import AdminLogin from "./pages/AdminLogin";
+import AdminDashboard from "./pages/AdminDashboard";
 
 const PrivateRoute = ({ children }) => {
   const token = sessionStorage.getItem("token");
@@ -44,7 +46,7 @@ const PrivateRoute = ({ children }) => {
 
 function AppContainer() {
   const location = useLocation();
-  const isDashboard = location.pathname.startsWith("/dashboard");
+  const isDashboard = location.pathname.startsWith("/dashboard") || location.pathname.startsWith("/admin");
 
   return (
     <div className={isDashboard ? "bg-[#f8f9fa] min-h-screen" : ""}>
@@ -81,6 +83,10 @@ function AppContainer() {
         />
 
         <Route path="/doctor/:cid" element={<DoctorAppointmentDetail />} />
+
+        {/* Admin Portal Routes */}
+        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
       </Routes>
 
       {!isDashboard && <Footer />}

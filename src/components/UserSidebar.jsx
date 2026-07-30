@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { Icon } from "@iconify/react";
-import doctorsData from "../data/doctorsData.json";
+import { fetchDoctorsDataFromDb } from "../utilities/dataLoader.js";
 import { AxiosInstanceSecondryServer } from "../utilities/AxiosInstance";
 
 export const UserSidebar = ({
@@ -33,21 +33,31 @@ export const UserSidebar = ({
     return Array.isArray(ids) ? ids : [ids];
   }, [patientData]);
 
-  const clinics = useMemo(() => {
-    const rawClinics = doctorsData.filter(
-      (d) =>
-        patientClinicId.includes(d.cid) ||
-        appointmentClinics.includes(d.clinic_name)
-    );
-    
-    const uniqueClinicsMap = new Map();
-    rawClinics.forEach(c => {
-      if (!uniqueClinicsMap.has(c.cid)) {
-        uniqueClinicsMap.set(c.cid, c);
+  const [clinics, setClinics] = useState([]);
+
+  useEffect(() => {
+    const loadClinics = async () => {
+      try {
+        const doctorsData = await fetchDoctorsDataFromDb();
+        const rawClinics = doctorsData.filter(
+          (d) =>
+            patientClinicId.includes(d.cid) ||
+            appointmentClinics.includes(d.clinic_name)
+        );
+        
+        const uniqueClinicsMap = new Map();
+        rawClinics.forEach(c => {
+          if (!uniqueClinicsMap.has(c.cid)) {
+            uniqueClinicsMap.set(c.cid, c);
+          }
+        });
+        
+        setClinics(Array.from(uniqueClinicsMap.values()));
+      } catch (err) {
+        console.error("Error loading sidebar clinics from DB:", err);
       }
-    });
-    
-    return Array.from(uniqueClinicsMap.values());
+    };
+    loadClinics();
   }, [patientClinicId, appointmentClinics]);
 
   useEffect(() => {
