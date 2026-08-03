@@ -11,8 +11,7 @@ const AxiosInstanceSecondryServer = axios.create({
 
 const AxiosInstanceDependency = axios.create({
   baseURL: isLocal
-    // ? "http://localhost:3028/"
-    ? "https://dependencyforphn.physicianhealthnet.com/api/"
+    ? "http://localhost:3028/"
     : "https://dependencyforphn.physicianhealthnet.com/api/"
 })
 

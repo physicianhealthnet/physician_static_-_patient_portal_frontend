@@ -25,10 +25,12 @@ function AdminDashboard() {
     { name: "", department: "General", email: "", phone: "", password: "password123" }
   ]);
   const [clinicFormStaffs, setClinicFormStaffs] = useState([]);
+  const [clinicFormMasters, setClinicFormMasters] = useState([]);
 
   // Roster Tab edit states
   const [rosterDoctors, setRosterDoctors] = useState([]);
   const [rosterStaffs, setRosterStaffs] = useState([]);
+  const [rosterMasters, setRosterMasters] = useState([]);
   const [updatingRoster, setUpdatingRoster] = useState(false);
 
   // Enable/Approve Modal
@@ -84,6 +86,7 @@ function AdminDashboard() {
         ...clinicForm,
         doctors: clinicFormDoctors.filter(d => d.name.trim() !== ""),
         staffs: clinicFormStaffs.filter(s => s.name.trim() !== ""),
+        masters: clinicFormMasters.filter(m => m.name.trim() !== ""),
       };
 
       if (payload.doctors.length === 0) {
@@ -106,6 +109,7 @@ function AdminDashboard() {
       });
       setClinicFormDoctors([{ name: "", department: "General", email: "", phone: "", password: "password123" }]);
       setClinicFormStaffs([]);
+      setClinicFormMasters([]);
       
       fetchClinics();
     } catch (err) {
@@ -137,6 +141,7 @@ function AdminDashboard() {
     setSelectedClinic(clinic);
     setRosterDoctors(clinic.doctors || []);
     setRosterStaffs(clinic.staffs || []);
+    setRosterMasters(clinic.masters || []);
     setActiveTab("roster");
   };
 
@@ -153,6 +158,7 @@ function AdminDashboard() {
         address: selectedClinic.address,
         doctors: rosterDoctors.filter(d => d.name.trim() !== ""),
         staffs: rosterStaffs.filter(s => s.name.trim() !== ""),
+        masters: rosterMasters.filter(m => m.name.trim() !== ""),
       };
 
       const res = await AxiosInstanceDependency.put(
@@ -167,6 +173,7 @@ function AdminDashboard() {
       setSelectedClinic(res.data.data);
       setRosterDoctors(res.data.data.doctors || []);
       setRosterStaffs(res.data.data.staffs || []);
+      setRosterMasters(res.data.data.masters || []);
     } catch (err) {
       console.error("Roster update error:", err);
       showNotification("Failed to update clinic roster.", "error");
@@ -321,6 +328,9 @@ function AdminDashboard() {
                               </span>
                               <span className="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-lg">
                                 {clinic.staffs?.length || 0} Staff
+                              </span>
+                              <span className="px-2.5 py-1 bg-purple-50 text-purple-700 rounded-lg">
+                                {clinic.masters?.length || 0} Masters
                               </span>
                             </div>
                           </td>
@@ -579,6 +589,100 @@ function AdminDashboard() {
                                 setRosterStaffs(copy);
                               }}
                               placeholder="9876543211"
+                              className="w-full mt-1 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Master List */}
+                <div className="lg:col-span-12 bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <h3 className="font-black text-[#28328c] uppercase tracking-wider text-xs">Master Administrators</h3>
+                    <button
+                      onClick={() =>
+                        setRosterMasters([
+                          ...rosterMasters,
+                          { name: "", email: "", phone: "", password: "password123" },
+                        ])
+                      }
+                      className="text-xs font-bold text-[#14bef0] flex items-center gap-1 cursor-pointer hover:underline"
+                    >
+                      <Icon icon="solar:add-circle-linear" className="text-base" /> Add Master Admin
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {rosterMasters.map((m, idx) => (
+                      <div key={idx} className="p-4 bg-slate-50 rounded-2xl border border-slate-200/50 space-y-3">
+                        <div className="flex justify-between items-center">
+                          <span className="text-[10px] font-black text-purple-600 bg-purple-50 px-2.5 py-1 rounded-lg">
+                            {m.id || "NEW MASTER"}
+                          </span>
+                          <button
+                            onClick={() => setRosterMasters(rosterMasters.filter((_, i) => i !== idx))}
+                            className="text-red-500 hover:text-red-700 cursor-pointer"
+                          >
+                            <Icon icon="solar:trash-bin-trash-linear" className="text-lg" />
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="text-[9px] font-bold text-slate-400 uppercase">Master Name</label>
+                            <input
+                              type="text"
+                              value={m.name}
+                              onChange={(e) => {
+                                const copy = [...rosterMasters];
+                                copy[idx].name = e.target.value;
+                                setRosterMasters(copy);
+                              }}
+                              placeholder="Master Name"
+                              className="w-full mt-1 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[9px] font-bold text-slate-400 uppercase">Email</label>
+                            <input
+                              type="email"
+                              value={m.email || ""}
+                              onChange={(e) => {
+                                const copy = [...rosterMasters];
+                                copy[idx].email = e.target.value;
+                                setRosterMasters(copy);
+                              }}
+                              placeholder="master@clinic.com"
+                              className="w-full mt-1 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[9px] font-bold text-slate-400 uppercase">Phone</label>
+                            <input
+                              type="text"
+                              value={m.phone || ""}
+                              onChange={(e) => {
+                                const copy = [...rosterMasters];
+                                copy[idx].phone = e.target.value;
+                                setRosterMasters(copy);
+                              }}
+                              placeholder="9876543212"
+                              className="w-full mt-1 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[9px] font-bold text-slate-400 uppercase">Password</label>
+                            <input
+                              type="password"
+                              value={m.password || ""}
+                              onChange={(e) => {
+                                const copy = [...rosterMasters];
+                                copy[idx].password = e.target.value;
+                                setRosterMasters(copy);
+                              }}
+                              placeholder="••••••••"
                               className="w-full mt-1 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none"
                             />
                           </div>
@@ -874,6 +978,102 @@ function AdminDashboard() {
                             setClinicFormStaffs(copy);
                           }}
                           placeholder="9876543211"
+                          className="w-full mt-1 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Master initialization */}
+              <div className="border-t border-slate-100 pt-4 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-black text-[#28328c] uppercase tracking-wider text-[10px]">Add Primary Masters</h3>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setClinicFormMasters([
+                        ...clinicFormMasters,
+                        { name: "", email: "", phone: "", password: "password123" },
+                      ])
+                    }
+                    className="text-xs font-bold text-[#14bef0] flex items-center gap-1 cursor-pointer"
+                  >
+                    <Icon icon="solar:add-circle-linear" className="text-base" /> Add Master Admin
+                  </button>
+                </div>
+
+                {clinicFormMasters.map((m, idx) => (
+                  <div key={idx} className="p-4 bg-slate-50 rounded-2xl border border-slate-200/50 space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Master #{idx + 1}</span>
+                      <button
+                        type="button"
+                        onClick={() => setClinicFormMasters(clinicFormMasters.filter((_, i) => i !== idx))}
+                        className="text-red-500 hover:text-red-700 cursor-pointer"
+                      >
+                        <Icon icon="solar:trash-bin-trash-linear" className="text-lg" />
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-[9px] font-bold text-slate-400 uppercase">Master Name</label>
+                        <input
+                          type="text"
+                          required
+                          value={m.name}
+                          onChange={(e) => {
+                            const copy = [...clinicFormMasters];
+                            copy[idx].name = e.target.value;
+                            setClinicFormMasters(copy);
+                          }}
+                          placeholder="Master Name"
+                          className="w-full mt-1 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[9px] font-bold text-slate-400 uppercase">Email</label>
+                        <input
+                          type="email"
+                          required
+                          value={m.email}
+                          onChange={(e) => {
+                            const copy = [...clinicFormMasters];
+                            copy[idx].email = e.target.value;
+                            setClinicFormMasters(copy);
+                          }}
+                          placeholder="master@phn.com"
+                          className="w-full mt-1 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[9px] font-bold text-slate-400 uppercase">Phone</label>
+                        <input
+                          type="text"
+                          required
+                          value={m.phone}
+                          onChange={(e) => {
+                            const copy = [...clinicFormMasters];
+                            copy[idx].phone = e.target.value;
+                            setClinicFormMasters(copy);
+                          }}
+                          placeholder="9876543212"
+                          className="w-full mt-1 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[9px] font-bold text-slate-400 uppercase">Password</label>
+                        <input
+                          type="password"
+                          required
+                          value={m.password}
+                          onChange={(e) => {
+                            const copy = [...clinicFormMasters];
+                            copy[idx].password = e.target.value;
+                            setClinicFormMasters(copy);
+                          }}
+                          placeholder="••••••••"
                           className="w-full mt-1 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none"
                         />
                       </div>
